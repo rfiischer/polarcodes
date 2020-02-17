@@ -38,6 +38,7 @@ class PolarCoding(object):
         self.rel_idx = rel_idx
 
         self.encode = self.Encode(self)
+        self.decode = self.Decode(self)
 
     def _generate_g(self):
         """
@@ -56,6 +57,9 @@ class PolarCoding(object):
             self.N = obj.N
             self.Fn = obj.Fn
             self.rel_idx = obj.rel_idx
+            self.rate = None
+            self.K = None
+            self.information = None
 
         def __call__(self, bits):
             """
@@ -64,7 +68,81 @@ class PolarCoding(object):
             :return: b * Fn
             """
 
-            bit_vector = np.zeros(self.N)
+            bit_vector = np.zeros(self.N, dtype=int)
             bit_vector[self.rel_idx[:bits.size]] = bits
-            self.rate = bits.size / self.N
+            self.K = bits.size
+            self.rate = self.K / self.N
+            self.information = self.rel_idx[:bits.size]
             return np.mod(np.matmul(bit_vector, self.Fn), 2)
+
+    class Decode(object):
+        def __init__(self, obj):
+            self.encode = obj.encode
+            self.N = obj.N
+            self.dec_bits = None
+
+        def __call__(self, llr):
+            self.dec_bits = np.zeros(self.N, dtype=int)
+            _ = self.compute_node(llr, self.N, 0)
+            return self.dec_bits[self.encode.information]
+
+        @staticmethod
+        def _fl(a, b):
+            return np.log((1 + np.exp(a + b)) / (np.exp(a) + np.exp(b)))
+
+        @staticmethod
+        def _fr(a, b, c):
+            return b + (1 - 2 * c) * a
+
+        def alpha_left(self, alphas):
+            out_size = len(alphas) // 2
+            alphas_out = np.zeros(out_size)
+            for i in range(0, out_size):
+                alphas_out[i] = self._fl(alphas[i], alphas[i + out_size])
+
+            return alphas_out
+
+        def alpha_right(self, alphas, betas):
+            out_size = len(alphas) // 2
+            alphas_out = np.zeros(out_size)
+            for i in range(0, out_size):
+                alphas_out[i] = self._fr(alphas[i], alphas[i + out_size], betas[i])
+
+            return alphas_out
+
+        @staticmethod
+        def betas(betas_left, betas_right):
+            betas_size = len(betas_left)
+            out_size = 2 * betas_size
+            betas_out = np.zeros(out_size, dtype=int)
+            for i in range(0, betas_size):
+                betas_out[i] = betas_left[i] ^ betas_right[i]
+                betas_out[i + betas_size] = betas_right[i]
+
+            return betas_out
+
+        def compute_node(self, alphas, level, counter):
+            """
+
+            :param alphas: LLR's
+            :param level: tree level
+            :param counter: leaf counter
+            :return: betas
+            """
+
+            if len(alphas) > 1:
+                alpha_l = self.alpha_left(alphas)
+                beta_l = self.compute_node(alpha_l, level // 2, counter)
+                alpha_r = self.alpha_right(alphas, beta_l)
+                beta_r = self.compute_node(alpha_r, level // 2, counter + level // 2)
+                beta = self.betas(beta_l, beta_r)
+
+            else:
+                if counter in self.encode.information:
+                    beta = np.array([0]) if alphas > 0 else np.array([1])
+                    self.dec_bits[counter] = beta[0]
+
+                else:
+                    beta = np.array([0])
+
+            return beta

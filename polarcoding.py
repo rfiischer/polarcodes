@@ -83,7 +83,7 @@ class PolarCoding(object):
 
         def __call__(self, llr):
             self.dec_bits = np.zeros(self.N, dtype=int)
-            _ = self.compute_node(llr, self.N, 0)
+            _ = self._compute_node(llr, self.N, 0)
             return self.dec_bits[self.encode.information]
 
         @staticmethod
@@ -94,7 +94,7 @@ class PolarCoding(object):
         def _fr(a, b, c):
             return b + (1 - 2 * c) * a
 
-        def alpha_left(self, alphas):
+        def _alpha_left(self, alphas):
             out_size = len(alphas) // 2
             alphas_out = np.zeros(out_size)
             for i in range(0, out_size):
@@ -102,7 +102,7 @@ class PolarCoding(object):
 
             return alphas_out
 
-        def alpha_right(self, alphas, betas):
+        def _alpha_right(self, alphas, betas):
             out_size = len(alphas) // 2
             alphas_out = np.zeros(out_size)
             for i in range(0, out_size):
@@ -111,7 +111,7 @@ class PolarCoding(object):
             return alphas_out
 
         @staticmethod
-        def betas(betas_left, betas_right):
+        def _betas(betas_left, betas_right):
             betas_size = len(betas_left)
             out_size = 2 * betas_size
             betas_out = np.zeros(out_size, dtype=int)
@@ -121,7 +121,7 @@ class PolarCoding(object):
 
             return betas_out
 
-        def compute_node(self, alphas, level, counter):
+        def _compute_node(self, alphas, level, counter):
             """
 
             :param alphas: LLR's
@@ -131,11 +131,11 @@ class PolarCoding(object):
             """
 
             if len(alphas) > 1:
-                alpha_l = self.alpha_left(alphas)
-                beta_l = self.compute_node(alpha_l, level // 2, counter)
-                alpha_r = self.alpha_right(alphas, beta_l)
-                beta_r = self.compute_node(alpha_r, level // 2, counter + level // 2)
-                beta = self.betas(beta_l, beta_r)
+                alpha_l = self._alpha_left(alphas)
+                beta_l = self._compute_node(alpha_l, level // 2, counter)
+                alpha_r = self._alpha_right(alphas, beta_l)
+                beta_r = self._compute_node(alpha_r, level // 2, counter + level // 2)
+                beta = self._betas(beta_l, beta_r)
 
             else:
                 if counter in self.encode.information:

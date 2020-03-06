@@ -22,7 +22,7 @@ def _fr(a, b, c):
 
 @nb.njit("float64[:](float64[:], uint8[:])")
 def _alpha_right(alphas, betas):
-    out_size = len(alphas) // 2
+    out_size = alphas.size // 2
     alphas_out = np.zeros(out_size)
     for i in nb.prange(0, out_size):
         alphas_out[i] = _fr(alphas[i], alphas[i + out_size], betas[i])
@@ -32,7 +32,7 @@ def _alpha_right(alphas, betas):
 
 @nb.njit("float64[:](float64[:])")
 def _alpha_left(alphas):
-    out_size = len(alphas) // 2
+    out_size = alphas.size // 2
     alphas_out = np.zeros(out_size)
     for i in range(0, out_size):
         alphas_out[i] = _fl(alphas[i], alphas[i + out_size])
@@ -42,7 +42,7 @@ def _alpha_left(alphas):
 
 @nb.njit("uint8[:](uint8[:], uint8[:])")
 def _betas(betas_left, betas_right):
-    betas_size = len(betas_left)
+    betas_size = betas_left.size
     out_size = 2 * betas_size
     betas_out = np.zeros(out_size, dtype=np.uint8)
     for i in nb.prange(0, betas_size):

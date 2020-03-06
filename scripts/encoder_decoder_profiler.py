@@ -8,7 +8,7 @@ Created on 17/02/2020 17:33
 
 import numpy as np
 
-from polarcoding import PolarCoding
+from coding.polarcoding import PolarCoding
 
 n = 10
 frames = 1000

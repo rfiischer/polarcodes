@@ -8,7 +8,7 @@ Created on 12/02/2020 12:13
 
 import numpy as np
 
-from polarcoding import PolarCoding
+from coding.polarcoding import PolarCoding
 
 
 p4 = PolarCoding(2)

@@ -8,7 +8,7 @@ Created on 17/02/2020 14:33
 
 import numpy as np
 
-from polarcoding import PolarCoding
+from coding.polarcoding import PolarCoding
 
 permutation = [0, 1, 2, 4, 3, 5, 6, 7]
 pc = PolarCoding(3, permutation)

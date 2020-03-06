@@ -18,5 +18,5 @@ bits = np.random.randint(0, 2, 2 ** n)
 
 for frame in range(0, frames):
     encoded = pc.encode(bits)
-    llr = [1 if value == 0 else -1 for value in encoded]
-    decoded = pc.decode(llr)
+    llr = [1. if value == 0 else -1. for value in encoded]
+    pc.decode(llr)

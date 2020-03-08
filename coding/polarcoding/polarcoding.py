@@ -8,7 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from coding.polarcoding.polarfuncs import *
+from coding.polarcoding.polarfuncs import alpha_right, alpha_left, betas, compute_node
 
 
 class PolarCoding(object):
@@ -37,7 +37,7 @@ class PolarCoding(object):
         else:
             rel_idx = np.arange(0, self.N)
 
-        self.rel_idx = rel_idx
+        self.rel_idx = np.array(rel_idx, dtype=np.uint64)
 
         self.encode = self.Encode(self)
         self.decode = self.Decode(self)
@@ -84,10 +84,14 @@ class PolarCoding(object):
             self.dec_bits = None
 
         def __call__(self, llr):
-            self.dec_bits = np.zeros(self.N, dtype=np.uint8)
+            dec_bits = np.zeros(self.N, dtype=np.uint8)
 
-            _ = self._compute_node(np.array(llr, dtype=np.float64), self.N, 0, self.encode.information)
-            return self.dec_bits[self.encode.information]
+            _ = compute_node(np.array(llr, dtype=np.float64),
+                             np.uint64(self.N),
+                             np.uint64(0),
+                             self.encode.information,
+                             dec_bits)
+            return dec_bits[self.encode.information]
 
         def _compute_node(self, alphas, level, counter, information):
             """
@@ -100,11 +104,11 @@ class PolarCoding(object):
             """
 
             if len(alphas) > 1:
-                alpha_l = _alpha_left(alphas)
+                alpha_l = alpha_left(alphas)
                 beta_l = self._compute_node(alpha_l, level // 2, counter, information)
-                alpha_r = _alpha_right(alphas, beta_l)
+                alpha_r = alpha_right(alphas, beta_l)
                 beta_r = self._compute_node(alpha_r, level // 2, counter + level // 2, information)
-                beta = _betas(beta_l, beta_r)
+                beta = betas(beta_l, beta_r)
 
             else:
                 if counter in information:

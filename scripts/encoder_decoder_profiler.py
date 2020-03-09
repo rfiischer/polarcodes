@@ -14,7 +14,7 @@ n = 10
 frames = 1000
 pc = PolarCoding(n)
 
-bits = np.random.randint(0, 2, 2 ** n)
+bits = np.random.randint(0, 2, 2 ** n, dtype=np.uint8)
 
 for frame in range(0, frames):
     encoded = pc.encode(bits)

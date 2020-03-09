@@ -8,7 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from coding.polarcoding.polarfuncs import alpha_right, alpha_left, betas, compute_node
+from coding.polarcoding.polarfuncs import compute_node, encode
 
 
 class PolarCoding(object):
@@ -26,7 +26,7 @@ class PolarCoding(object):
         self.N = 2 ** n
         self.n = n
 
-        self.F = np.array([[1, 0], [1, 1]])
+        self.F = np.array([[1, 0], [1, 1]], dtype=np.uint8)
 
         self.Fn = self._generate_g()
 
@@ -57,7 +57,7 @@ class PolarCoding(object):
     class Encode(object):
         def __init__(self, obj):
             self.N = obj.N
-            self.Fn = obj.Fn
+            self.n = obj.n
             self.rel_idx = obj.rel_idx
             self.rate = None
             self.K = None
@@ -70,12 +70,12 @@ class PolarCoding(object):
             :return: b * Fn
             """
 
-            bit_vector = np.zeros(self.N, dtype=int)
-            bit_vector[self.rel_idx[:bits.size]] = bits
             self.K = bits.size
             self.rate = self.K / self.N
             self.information = self.rel_idx[:bits.size]
-            return np.mod(np.matmul(bit_vector, self.Fn), 2)
+            bit_vector = np.zeros(self.N, dtype=np.uint8)
+            bit_vector[self.rel_idx[:bits.size]] = bits
+            return encode(bit_vector, self.n)
 
     class Decode(object):
         def __init__(self, obj):

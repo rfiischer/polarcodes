@@ -15,6 +15,7 @@ import numpy as np
 # pythran export alpha_left(float64[:])
 # pythran export betas(uint8 list, uint8 list)
 # pythran export compute_node(float64[:], uint64, uint64, uint64[:], uint8[:])
+# pythran export encode(uint8[:], uint64)
 
 
 def fl(a, b):
@@ -83,3 +84,20 @@ def compute_node(alphas, level, counter, information, dec_bits):
             beta = [0]
 
     return beta
+
+
+def encode(bits, n):
+    stage_input = bits
+    stage_output = np.zeros(2 ** n, dtype=np.uint8)
+    for i in range(n):
+        for j in range(2 ** i):
+            stage_output[j * 2 ** (n - i):
+                         (j + 1) * 2 ** (n - i)] = betas(stage_input[j * 2 ** (n - 1 - i):
+                                                                     (j + 1) * 2 ** (n - 1 - i)],
+                                                         stage_input[(j + 1) * 2 ** (n - 1 - i):
+                                                                     (j + 2) * 2 ** (n - 1 - i)])
+
+        stage_input = stage_output
+        stage_output = np.zeros(2 ** n, dtype=np.uint8)
+
+    return stage_output

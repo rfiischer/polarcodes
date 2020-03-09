@@ -11,9 +11,9 @@ import numpy as np
 
 # pythran export fl(float64, float64)
 # pythran export fr(float64, float64, uint8)
-# pythran export alpha_right(float64[:], uint8[:])
+# pythran export alpha_right(float64[:], uint8 list)
 # pythran export alpha_left(float64[:])
-# pythran export betas(uint8[:], uint8[:])
+# pythran export betas(uint8 list, uint8 list)
 # pythran export compute_node(float64[:], uint64, uint64, uint64[:], uint8[:])
 
 
@@ -44,19 +44,19 @@ def alpha_left(alphas):
 
 
 def betas(betas_left, betas_right):
-    betas_size = betas_left.size
+    betas_size = len(betas_left)
     out_size = 2 * betas_size
-    betas_out = np.zeros(out_size, dtype=np.uint8)
+    betas_out = [0] * out_size
     for i in range(0, betas_size):
         betas_out[i] = betas_left[i] ^ betas_right[i]
         betas_out[i + betas_size] = betas_right[i]
 
-    print(np.float64(betas_out))
     return betas_out
 
 
 def compute_node(alphas, level, counter, information, dec_bits):
     """
+    Recursive computation of node metrics
 
     :param alphas: LLR's
     :param level: tree level
@@ -68,26 +68,18 @@ def compute_node(alphas, level, counter, information, dec_bits):
 
     if alphas.size > 1:
         alpha_l = alpha_left(alphas)
-        beta_l = compute_node(alpha_l, np.uint64(level / 2), np.uint64(counter), information, dec_bits)
+        beta_l = compute_node(alpha_l, level // 2, counter, information, dec_bits)
         alpha_r = alpha_right(alphas, beta_l)
-        beta_r = compute_node(alpha_r, np.uint64(level / 2), np.uint64(counter + level / 2),
+        beta_r = compute_node(alpha_r, level // 2, counter + level // 2,
                               information, dec_bits)
         beta = betas(beta_l, beta_r)
 
-        print('node')
-        print(beta.size)
-        print(np.float64(beta))
-
     else:
         if counter in information:
-            beta = np.array([0], dtype=np.uint8) if alphas[0] > 0 else np.array([1], dtype=np.uint8)
+            beta = [0] if alphas[0] > 0 else [1]
             dec_bits[counter] = beta[0]
 
         else:
-            beta = np.array([0], dtype=np.uint8)
+            beta = [0]
 
-        print('leaf')
-
-    print(np.float64(beta))
-    print('\n')
     return beta

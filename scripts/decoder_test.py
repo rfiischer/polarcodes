@@ -17,9 +17,9 @@ for K in range(1, 9):
     for i in range(0, 2 ** K):
         bits = np.unpackbits(np.array([i], dtype=np.uint8))[8 - K:]
         encoded = pc.encode(bits)
-        llr = [0.5 if value == 0 else -0.5 for value in encoded]
+        llr = [1.5 if value == 0 else -1.5 for value in encoded]
         decoded = pc.decode(llr)
         print(bits)
         print(decoded)
-        assert np.all(decoded == bits)
         print('\n')
+        assert np.all(decoded == bits)

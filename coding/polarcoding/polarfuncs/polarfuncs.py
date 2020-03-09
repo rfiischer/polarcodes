@@ -92,12 +92,12 @@ def encode(bits, n):
     for i in range(n):
         for j in range(2 ** i):
             stage_output[j * 2 ** (n - i):
-                         (j + 1) * 2 ** (n - i)] = betas(stage_input[j * 2 ** (n - 1 - i):
-                                                                     (j + 1) * 2 ** (n - 1 - i)],
-                                                         stage_input[(j + 1) * 2 ** (n - 1 - i):
-                                                                     (j + 2) * 2 ** (n - 1 - i)])
+                         (j + 1) * 2 ** (n - i)] = betas(stage_input[2 * j * 2 ** (n - 1 - i):
+                                                                     (2 * j + 1) * 2 ** (n - 1 - i)],
+                                                         stage_input[(2 * j + 1) * 2 ** (n - 1 - i):
+                                                                     (2 * j + 2) * 2 ** (n - 1 - i)])
 
         stage_input = stage_output
         stage_output = np.zeros(2 ** n, dtype=np.uint8)
 
-    return stage_output
+    return stage_input

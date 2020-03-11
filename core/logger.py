@@ -23,9 +23,10 @@ class Filter(object):
 def setup_logging(default_log_file=None, log_debug=False):
 
     root_logger = logging.getLogger()
+    root_logger.setLevel(logging.NOTSET)
 
     if default_log_file:
-        handler = logging.FileHandler(filename=default_log_file, encoding='utf8')
+        handler = logging.FileHandler(filename=default_log_file, encoding='utf8', mode='w')
     else:
         handler = logging.StreamHandler(sys.stdout)
 

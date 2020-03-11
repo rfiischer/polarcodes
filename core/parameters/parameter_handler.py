@@ -18,6 +18,7 @@ class ParameterHandler:
         self.parser = configparser.ConfigParser()
         self.logger = logging.getLogger(__name__)
         self.log_file = None
+        self.log_debug = False
 
         golden_file_path = os.path.join(os.path.dirname(__file__), "params.json")
         with open(golden_file_path, 'r', encoding='utf-8') as def_file:

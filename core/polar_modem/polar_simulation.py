@@ -11,8 +11,6 @@ class PolarSimulation(Simulation):
         super().__init__(parameters)
 
         # Set up the simulation objects
-        self.awgn = AWGN(parameters.bits_p_symbol, rng=self.rng, snr_unit=parameters.snr_unit)
-
         self.statistics.add_categories([('ber', True),
                                         ('fer', True)])
 
@@ -36,11 +34,15 @@ class PolarSimulation(Simulation):
                                                start_level=parameters.start_dynamic_level)
 
         self.modem = Modem(parameters, self.rng)
+        self.awgn = AWGN(parameters.bits_p_symbol, rng=self.rng, snr_unit=parameters.snr_unit,
+                         efficiency_factor=self.modem.rate)
 
     def run(self):
         for snr_db in self.snr_manager:
 
             self.statistics.add_snr(snr_db)
+
+            self.logger.info("Simulating SNR {}".format(snr_db))
 
             while not self.snr_manager.snr_stop():
 

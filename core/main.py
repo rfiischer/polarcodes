@@ -13,7 +13,7 @@ from core.logger import setup_logging
 
 def main(parameter_file=None):
     handler = ParameterHandler(parameter_file)
-    setup_logging(handler.log_file)
+    setup_logging(handler.log_file, handler.log_debug)
     simulation = PolarSimulation(handler)
 
     simulation.run()

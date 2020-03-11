@@ -19,6 +19,7 @@ class Modem:
         # Parameters
         self.K = parameters.k
         self.n = parameters.n
+        self.rate = self.K / 2 ** self.n
         self._snr = parameters.base_design_snr
         self.construction_method = parameters.construction_method
 

@@ -2,22 +2,13 @@
 
 import numpy as np
 
-from core.int_bit import int2bit_constructor, bit2int_constructor
+from core.utils.int_bit import int2bit_constructor, bit2int_constructor
 
 
 class Modulator(object):
     """Creates the modulator object."""
 
-    def __init__(self, constellation, order=4, spread_factor=1):
-        """Initialize object.
-
-        :param constellation: constellation object
-        :param order: modulation order, namely
-            - 2: pi/2-BPSK
-            - 4: QPSK
-            - 8: 8PSK
-            - 16: 16APSK
-        """
+    def __init__(self, constellation, order=1, spread_factor=1):
 
         if constellation.phase_func[order] is not None:
             self.phase = True
@@ -28,7 +19,7 @@ class Modulator(object):
 
         self.constellation = constellation.mod_schemes[order]()
         self.order = order
-        self.bits_p_symbol = int(np.log2(order))
+        self.bits_p_symbol = order
         self.spread_factor = spread_factor
         self.bit2int = bit2int_constructor(self.bits_p_symbol)
 
@@ -74,20 +65,7 @@ class Modulator(object):
 
 class Demodulator(object):
 
-    def __init__(self, constellation, demod_type='max-log', order=4, spread_factor=1):
-        """Initialize object.
-
-        :param demod_type:
-            - "max-log" Approximates LLR with Max-Log approach, without implementing decision regions
-            - "llr_exact"
-            - "bits" Hard demodulation
-        :param constellation: constellation object
-        :param order: modulation order, namely
-            - 2: pi/2-BPSK
-            - 4: QPSK
-            - 8: 8PSK
-            - 16: 16APSK
-        """
+    def __init__(self, constellation, demod_type='max-log', order=1, spread_factor=1):
 
         if constellation.phase_func[order] is not None:
             self.phase = True
@@ -98,7 +76,7 @@ class Demodulator(object):
 
         self.constellation = constellation.mod_schemes[order]()
         self.order = order
-        self.bits_p_symbol = int(np.log2(order))
+        self.bits_p_symbol = order
         self.spread_factor = spread_factor
         self.int2bit = int2bit_constructor(self.bits_p_symbol)
         self.demod_type = demod_type
@@ -131,7 +109,7 @@ class Demodulator(object):
             dist = np.abs(np.subtract.outer(symbols, self.constellation)) ** 2
 
             # Sum distances
-            dist = np.reshape(dist, (unspread_leng, self.spread_factor, self.order))
+            dist = np.reshape(dist, (unspread_leng, self.spread_factor, 2 ** self.order))
             dist = np.sum(dist, axis=1)
 
             # Dist is shaped (stream_leng, order), and for each line the minimum is selected
@@ -148,17 +126,17 @@ class Demodulator(object):
             # Gets squared distances to all constellation points
             dist = np.abs(np.subtract.outer(symbols, self.constellation)) ** 2 / (2 * variance)
 
-            if self.order == 2:
+            if self.order == 1:
                 demod_output = dist[:, 1] - dist[:, 0]
 
-            elif self.order == 4:
+            elif self.order == 2:
                 # LLR for the MSB
                 demod_output[::2] = np.min(dist[:, [2, 3]], axis=1) - np.min(dist[:, [0, 1]], axis=1)
 
                 # LLR for the LSB
                 demod_output[1::2] = np.min(dist[:, [1, 3]], axis=1) - np.min(dist[:, [0, 2]], axis=1)
 
-            elif self.order == 8:
+            elif self.order == 3:
                 # LLR for the MSB
                 demod_output[::3] = np.min(dist[:, [4, 5, 6, 7]], axis=1) - np.min(dist[:, [0, 1, 2, 3]], axis=1)
 
@@ -167,7 +145,7 @@ class Demodulator(object):
                 # LLR for the LSB
                 demod_output[2::3] = np.min(dist[:, [1, 3, 5, 7]], axis=1) - np.min(dist[:, [0, 2, 4, 6]], axis=1)
 
-            elif self.order == 16:
+            elif self.order == 4:
                 # LLR for the MSB
                 demod_output[::4] = np.min(dist[:, [8, 9, 10, 11, 12, 13, 14, 15]],
                                            axis=1) - np.min(dist[:, [0, 1, 2, 3, 4, 5, 6, 7]], axis=1)
@@ -199,17 +177,17 @@ class Demodulator(object):
             # Obtain exponentials
             dist = np.exp(-dist)
 
-            if self.order == 2:
+            if self.order == 1:
                 demod_output = np.log(dist[:, 0] / dist[:, 1])
 
-            elif self.order == 4:
+            elif self.order == 2:
                 # LLR for the MSB
                 demod_output[::2] = np.log(np.sum(dist[:, [0, 1]], axis=1) / np.sum(dist[:, [2, 3]], axis=1))
 
                 # LLR for the LSB
                 demod_output[1::2] = np.log(np.sum(dist[:, [0, 2]], axis=1) / np.sum(dist[:, [1, 3]], axis=1))
 
-            elif self.order == 8:
+            elif self.order == 3:
                 # LLR for the MSB
                 demod_output[::3] = np.log(np.sum(dist[:, [0, 1, 2, 3]], axis=1) /
                                            np.sum(dist[:, [4, 5, 6, 7]], axis=1))
@@ -221,7 +199,7 @@ class Demodulator(object):
                 demod_output[2::3] = np.log(np.sum(dist[:, [0, 2, 4, 6]], axis=1) /
                                             np.sum(dist[:, [1, 3, 5, 7]], axis=1))
 
-            elif self.order == 16:
+            elif self.order == 4:
                 # LLR for the MSB
                 demod_output[::4] = np.log(np.sum(dist[:, [0, 1, 2, 3, 4, 5, 6, 7]], axis=1) /
                                            np.sum(dist[:, [8, 9, 10, 11, 12, 13, 14, 15]], axis=1))

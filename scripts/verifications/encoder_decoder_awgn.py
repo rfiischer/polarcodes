@@ -9,9 +9,9 @@ Created on 17/02/2020 17:33
 import numpy as np
 
 from coding.polarcoding import PolarCoding
-from core.awgn import AWGN
-from core.constellation import PolarConstellation
-from core.mod_demod import Modulator, Demodulator
+from core.utils.awgn import AWGN
+from core.utils.constellation import PolarConstellation
+from core.utils.mod_demod import Modulator, Demodulator
 
 n = 4
 k = 1
@@ -20,8 +20,8 @@ snr = 1
 rng = np.random.RandomState(seed=12465)
 awgn = AWGN(1, rng, snr_unit="EsN0_dB")
 constellation = PolarConstellation()
-mod = Modulator(constellation, 2)
-dem = Demodulator(constellation, 'llr_exact', 2)
+mod = Modulator(constellation, 1)
+dem = Demodulator(constellation, 'llr_exact', 1)
 
 err_sum = np.zeros(2 ** n)
 for i in range(0, 2 ** n):

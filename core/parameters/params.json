@@ -1,0 +1,154 @@
+{
+  "GENERAL": {
+    "log_debug": {
+      "param_options": [true, false],
+      "default_value": false,
+      "param_text": "Turn debugging log on or off"
+    },
+    "log_file": {
+      "param_options": null,
+      "default_value": null,
+      "param_text": "Simulation logging file. If not set, the output is the std_out."
+    },
+    "seed": {
+      "param_options": null,
+      "default_value": 12345,
+      "param_text": "Initial seed used for the random number generator"
+    },
+    "results_dir": {
+      "param_options": null,
+      "default_value": "results/",
+      "param_text": "Simulation results directory"
+    },
+    "results_file_extension": {
+      "param_options": null,
+      "default_value": ".txt",
+      "param_text": "Simulation results file extension"
+    },
+    "overwrite_output": {
+      "param_options": [true, false],
+      "default_value": true,
+      "param_text": "If true the results file is overwritten for new simulations. If set to false, \nthe simulator will create a new folder inside results_dir with new simulation results."
+    }
+  },
+  "SNR": {
+    "snr_range_type": {
+      "param_options": null,
+      "default_value": "range",
+      "param_text": "SNR range type: 'dynamic' or 'range'"
+    },
+    "min_snr_db": {
+      "param_options": null,
+      "default_value": -2.0,
+      "param_text": "Minimum SNR to be simulated on 'range' mode"
+    },
+    "max_snr_db": {
+      "param_options": null,
+      "default_value": 4.0,
+      "param_text": "Maximum SNR to be simulated on 'range' mode"
+    },
+    "snr_db_step": {
+      "param_options": null,
+      "default_value": 1.0,
+      "param_text": "SNR step incremented in each simulation step on 'range' mode"
+    },
+    "start_snr_db": {
+      "param_options": null,
+      "default_value": 0,
+      "param_text": "SNR start value on 'dynamic' mode"
+    },
+    "min_snr_step_db": {
+      "param_options": null,
+      "default_value": 0.01,
+      "param_text": "Minimum SNR step on 'dynamic' mode"
+    },
+    "start_dynamic_level": {
+      "param_options": null,
+      "default_value": 7,
+      "param_text": "Power of two to multiply the minimum step to obtain starting step"
+    },
+    "snr_unit": {
+      "param_options": [
+        "EbN0_dB",
+        "EsN0_dB"
+      ],
+      "default_value": "EsN0_dB",
+      "param_text": "Unit of the SNR method desired"
+    }
+  },
+  "SIMULATION": {
+    "min_bit_accuracy": {
+      "param_options": null,
+      "default_value": 0.1,
+      "param_text": "Minimum relative bit error rate accuracy"
+    },
+    "max_bit_counter": {
+      "param_options": null,
+      "default_value": null,
+      "param_text": "Maximum total bit counter"
+    },
+    "min_bit_counter": {
+      "param_options": null,
+      "default_value": null,
+      "param_text": "Minimum total bit counter"
+    },
+    "bit_target_stats": {
+      "param_options": null,
+      "default_value": [0, 1],
+      "param_text": "Desired range for BER statistics"
+    },
+    "min_frame_accuracy": {
+      "param_options": null,
+      "default_value": 0.1,
+      "param_text": "Minimum relative frame error rate accuracy"
+    },
+    "max_frame_counter": {
+      "param_options": null,
+      "default_value": 1000,
+      "param_text": "Maximum total frame counter"
+    },
+    "min_frame_counter": {
+      "param_options": null,
+      "default_value": 10,
+      "param_text": "Minimum total frame counter"
+    },
+    "frame_target_stats": {
+      "param_options": null,
+      "default_value": [0, 1],
+      "param_text": "Desired range for FER statistics"
+    }
+  },
+  "POLAR": {
+    "demod_type": {
+      "param_options": ["llr_exact",
+                        "max-log"],
+      "default_value": "max-log",
+      "param_text": "Wether to use the max-log approximation or calculate the exact LLR"
+    },
+    "n": {
+      "param_options": null,
+      "default_value": 10,
+      "param_text": "Construct polar code with block size N = 2 ** n"
+    },
+    "k": {
+      "param_options": null,
+      "default_value": 512,
+      "param_text": "Bit message size"
+    },
+    "bits_p_symbol": {
+      "param_options": [1, 2, 3, 4],
+      "default_value": 1,
+      "param_text": "Number of bits per symbol"
+    },
+    "construction_method": {
+      "param_options": ["bhattacharyya"],
+      "default_value": "bhattacharyya",
+      "param_text": "Polar code construction method"
+    },
+    "base_design_snr": {
+      "param_options": null,
+      "default_value": 0,
+      "param_text": "Base design SNR"
+    }
+  }
+}

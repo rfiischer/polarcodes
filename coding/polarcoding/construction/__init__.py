@@ -7,3 +7,4 @@ Created on 10/03/2020 13:14
 """
 
 from coding.polarcoding.construction.bhattacharyya import bhattacharyya
+from coding.polarcoding.construction.construction import construction

@@ -1,7 +1,3 @@
-"""
-Implement DVB-RCS2 constellations
-"""
-
 from abc import ABC, abstractmethod
 import numpy as np
 
@@ -9,15 +5,15 @@ import numpy as np
 class Constellation(ABC):
 
     def __init__(self):
-        self.mod_schemes = {2: self.bpsk,
-                            4: self.qpsk,
-                            8: self.psk_8,
-                            16: self.psk_16}
+        self.mod_schemes = {1: self.bpsk,
+                            2: self.qpsk,
+                            3: self.psk_8,
+                            4: self.psk_16}
 
-        self.phase_func = {2: None,
-                           4: None,
-                           8: None,
-                           16: None}
+        self.phase_func = {1: None,
+                           2: None,
+                           3: None,
+                           4: None}
 
     @abstractmethod
     def bpsk(self):
@@ -127,8 +123,8 @@ if __name__ == '__main__':
             ax.annotate(bin(txt)[2:].zfill(bits_p_point), (point.real + 0.025, point.imag + 0.025))
 
     const = PolarConstellation()
-    const_plotter(const.bpsk, 1, r'$\pi/2$-BPSK RCS2')
-    const_plotter(const.qpsk, 2, 'QPSK RCS2')
-    const_plotter(const.psk_8, 3, '8PSK RCS2')
+    const_plotter(const.bpsk, 1, 'BPSK')
+    const_plotter(const.qpsk, 2, 'QPSK')
+    const_plotter(const.psk_8, 3, '8PSK')
     const_plotter(const.psk_16, 4, '16QPSK')
     plt.show()

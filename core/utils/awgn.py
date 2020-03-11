@@ -2,18 +2,9 @@ import numpy as np
 
 
 class AWGN(object):
-    """Class responsible for additive white gaussian noise."""
 
     def __init__(self, bits_p_symbol, rng: np.random.RandomState, num_samp_symbol=1, snr_unit="EbN0_dB",
                  efficiency_factor=1):
-        """ AWGN object initialization
-
-        :param snr_unit: unit of the specified noise figure
-        :param bits_p_symbol: Number of user bits per symbol (modulation and coding efficiency)
-        :param num_samp_symbol: Oversampling factor
-        :param rng: Random Number Generator
-        :param efficiency_factor: Multiplication of external efficiencies (coding efficiency, signaling efficiency)
-        """
 
         self.bits_p_symbol = bits_p_symbol
         self.snr = None
@@ -30,22 +21,6 @@ class AWGN(object):
             raise ValueError('Invalid SNR unit: {}'.format(snr_unit))
 
     def __call__(self, signal, **kwargs):
-        """Adds AWGW noise to the input symbols.
-
-        If signal_power is specified, the mean bit energy is computed from it, considering signal_power as
-        being the same as Es, the symbol energy. If not, the mean bit energy is taken from input signal power.
-        Noise variance can be specified from the argument list, or evaluated from ebn0 in decibels.
-
-        In the case the signal_power is not specified, it is assumed that the symbol transmission rate is 1/k;
-        that is, the spacing between samples is one unit of time.
-
-        :param signal: input signal. If num_samp_symbol == 1, correspond to symbols sent.
-        :param kwargs:
-        : keyword arguments
-            :variance the noise variance
-            :snr signal to noise ratio value (EbN0, EsN0)
-        :return: input with added awgn noise
-        """
 
         # Number of samples to take average on
         num_samples = len(signal)

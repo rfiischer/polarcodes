@@ -23,16 +23,26 @@ class Filter(object):
 def setup_logging(default_log_file=None, log_debug=False):
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.NOTSET)
+
+    if not log_debug:
+        root_logger.setLevel(logging.INFO)
+
+    else:
+        root_logger.setLevel(logging.DEBUG)
 
     if default_log_file:
         handler = logging.FileHandler(filename=default_log_file, encoding='utf8', mode='w')
     else:
         handler = logging.StreamHandler(sys.stdout)
 
+    handler_sys = logging.StreamHandler(sys.stdout)
+    handler_sys.setLevel(logging.WARNING)
+
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
     handler.setFormatter(formatter)
-    if not log_debug:
-        handler.addFilter(Filter(logging.DEBUG))
+    handler_sys.setFormatter(formatter)
+
     root_logger.handlers = []
     root_logger.addHandler(handler)
+    root_logger.addHandler(handler_sys)

@@ -9,18 +9,17 @@ Created on 10/03/2020 13:14
 import numpy as np
 
 
-def bhattacharyya(n):
-    start_couples = np.array([[1, 0], [0, 1]], dtype=np.uint8)
-    for i in range(1, n):
-        size = start_couples.shape[0]
-        out_couples = np.zeros((size * 2, 2), dtype=np.uint8)
-        for j, couple in enumerate(start_couples):
-            out_couples[j, :] = [couple[0] + 1, couple[1]]
-            out_couples[j + size, :] = [2 * couple[0], couple[1] + 1]
+def bhattacharyya(n, design_snr):
+    start_parameter = [np.exp(- 10 ** (design_snr / 10))]
+    for i in range(n):
+        size = len(start_parameter)
+        out_parameter = np.zeros(size * 2, dtype=np.float64)
+        for j, parameter in enumerate(start_parameter):
+            out_parameter[j] = 2 * parameter - parameter ** 2
+            out_parameter[j + size] = parameter ** 2
 
-        start_couples = out_couples
+        start_parameter = out_parameter
 
-    first_sort = sorted(enumerate(start_couples), key=lambda item: item[1][0])
-    second_sort = sorted(first_sort, key=lambda item: item[1][1], reverse=True)
+    sorted_return = [x[0] for x in sorted(enumerate(start_parameter), key=lambda item: item[1])]
 
-    return [elm[0] for elm in second_sort]
+    return sorted_return

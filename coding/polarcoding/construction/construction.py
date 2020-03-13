@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def construction(method, n, design_snr):
     if method == "bhattacharyya":
-        rel_idx = bhattacharyya(n)
+        rel_idx = bhattacharyya(n, design_snr)
 
     else:
         logger.error("Construction method not implemented {}".format(method))

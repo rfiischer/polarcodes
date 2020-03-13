@@ -41,6 +41,7 @@ class PolarSimulation(Simulation):
         for snr_db in self.snr_manager:
 
             self.statistics.add_snr(snr_db)
+            self.modem.snr = snr_db
 
             self.logger.info("Simulating SNR {}".format(snr_db))
 

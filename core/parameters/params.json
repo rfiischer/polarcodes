@@ -122,7 +122,7 @@
     "demod_type": {
       "param_options": ["llr_exact",
                         "max-log"],
-      "default_value": "max-log",
+      "default_value": "llr_exact",
       "param_text": "Wether to use the max-log approximation or calculate the exact LLR"
     },
     "n": {
@@ -141,7 +141,8 @@
       "param_text": "Number of bits per symbol"
     },
     "construction_method": {
-      "param_options": ["bhattacharyya"],
+      "param_options": ["bhattacharyya",
+                        "tahir"],
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
     },

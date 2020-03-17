@@ -19,7 +19,7 @@ import numpy as np
 
 
 def fl(a, b):
-    return np.log((1 + np.exp(a + b)) / (np.exp(a) + np.exp(b)))
+    return np.sign(a) * np.sign(b) * min(abs(a), abs(b))
 
 
 def fr(a, b, c):

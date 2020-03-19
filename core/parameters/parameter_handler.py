@@ -14,7 +14,7 @@ import os
 
 
 class ParameterHandler:
-    def __init__(self, config_path=None):
+    def __init__(self, config_path=None, args=None):
         self.parser = configparser.ConfigParser()
         self.logger = logging.getLogger(__name__)
         self.log_file = None
@@ -32,8 +32,11 @@ class ParameterHandler:
             with open(config_path, 'r', encoding='utf-8') as config_file:
                 self.parser.read_file(config_file)
 
-        self._load_params()
+        if args is not None:
+            self.parser.read_dict(args)
+
         self._check_params()
+        self._load_params()
 
     def _load_params(self):
         for section in self.parser:
@@ -44,11 +47,14 @@ class ParameterHandler:
         for param_section in self.parser:
             if param_section not in self.defaults.keys() and param_section != 'DEFAULT':
                 self.logger.warning("Parameter section not defined on the defaults: {}".format(param_section))
+                sys.exit(1)
 
             for param_name, param_val in self.parser.items(param_section):
                 if param_name not in self.defaults[param_section].keys():
                     self.logger.warning("Parameter '{}' not defined on default section {}".format(param_name,
                                                                                                   param_section))
+
+                    sys.exit(1)
 
                 # Check if the parameter is valid
                 param_options = self.json_default[param_section][param_name]['param_options']

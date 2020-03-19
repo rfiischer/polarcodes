@@ -20,8 +20,8 @@ def bhattacharyya(n, design_snr):
         size = len(start_parameter)
         out_parameter = np.zeros(size * 2, dtype=np.float64)
         for j, parameter in enumerate(start_parameter):
-            out_parameter[j] = 2 * parameter - parameter ** 2
-            out_parameter[j + size] = parameter ** 2
+            out_parameter[2 * j] = 2 * parameter - parameter ** 2
+            out_parameter[2 * j + 1] = parameter ** 2
 
         start_parameter = out_parameter
 
@@ -36,8 +36,8 @@ def tahir(n, design_snr):
         j = 2 ** i
         out_parameter = np.zeros(j * 2, dtype=np.float64)
         for k, parameter in enumerate(start_parameter):
-            out_parameter[k] = 2 * parameter * (1 - parameter)
-            out_parameter[k + j] = norm.sf(np.sqrt(2) * norm.isf(parameter))
+            out_parameter[2 * k] = 2 * parameter * (1 - parameter)
+            out_parameter[2 * k + 1] = norm.sf(np.sqrt(2) * norm.isf(parameter))
 
         start_parameter = out_parameter
 

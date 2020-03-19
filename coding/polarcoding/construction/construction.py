@@ -107,7 +107,7 @@ def construction(method, n, design_snr):
         rel_idx = mdega(n, design_snr)[0]
 
     elif method == "dega":
-        rel_idx = mdega(n, design_snr)[0]
+        rel_idx = dega(n, design_snr)[0]
 
     else:
         logger.error("Construction method not implemented {}".format(method))

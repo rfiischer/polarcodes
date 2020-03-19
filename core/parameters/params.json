@@ -142,7 +142,9 @@
     },
     "construction_method": {
       "param_options": ["bhattacharyya",
-                        "tahir"],
+                        "tahir",
+                        "mdega",
+                        "dega"],
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
     },

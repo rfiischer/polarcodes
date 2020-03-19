@@ -39,9 +39,15 @@ class ParameterHandler:
         self._load_params()
 
     def _load_params(self):
+        self.params_dict = dict()
         for section in self.parser:
+            if section != 'DEFAULT':
+                self.params_dict[section] = dict()
+
             for option in self.parser[section]:
-                setattr(self, option, json.loads(self.parser[section][option]))
+                value = json.loads(self.parser[section][option])
+                setattr(self, option, value)
+                self.params_dict[section][option] = value
 
     def _check_params(self):
         for param_section in self.parser:
@@ -64,6 +70,9 @@ class ParameterHandler:
                                                                                             param_options))
 
                     sys.exit(1)
+
+    def dump_params(self):
+        return json.dumps(self.params_dict, indent=4)
 
     @staticmethod
     def _assemble_def_dict(json_def):

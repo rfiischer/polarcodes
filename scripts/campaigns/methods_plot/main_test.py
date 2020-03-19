@@ -9,7 +9,7 @@ Created on 10/03/2020 20:58
 from core.main import main
 import multiprocessing as mp
 
-methods = ['bhattacharyya', 'tahir']
+methods = ['bhattacharyya', 'tahir', 'mdega', 'dega']
 
 # Limit the maximum number of parallel processes
 max_num_of_proc = 5

@@ -159,6 +159,7 @@ class SnrDynamicManager(SnrManager):
         self.iter.any = not self._check_all_empty()
         self.iter.min_stats = self._check_min_stats()
         self.iter.max_stats = self._check_max_stats()
+        self.iter.lm = self.iter.level_min()
 
         self.iter.state_transition()
 
@@ -215,12 +216,14 @@ class SnrDynamicManager(SnrManager):
             self.counter = 0
             self.sb_counter = None
             self.last_counter = None
+            self.end_counter = None
             self._resetstep()
 
             # Iter variables
             self.any = None
             self.min_stats = None
             self.max_stats = None
+            self.lm = None
 
             # Memory
             self.memory = []
@@ -292,20 +295,24 @@ class SnrDynamicManager(SnrManager):
                     self.state = "stop"
 
                 elif not self.any:
+                    self._store_end()
                     self._leveldown()
                     self._updatestep()
                     self._curr_last_any()
                     self.state = "goforward"
 
             elif self.state == "goforward":
-                if self.any and self.max_stats:
+                if (self.any and self.max_stats) or ((not self.any) and self.lm):
                     self.state = "stop"
 
                 elif self.any and not self.max_stats:
                     self._leveldown()
                     self._updatestep()
+                    if self._next_is_end():
+                        self.state = "stop"
 
-                elif not self.any:
+                elif (not self.any) and (not self.lm):
+                    self._store_end()
                     self._leveldown()
                     self._updatestep()
                     self._curr_last_any()
@@ -332,7 +339,7 @@ class SnrDynamicManager(SnrManager):
             self.level += 1
 
         def _leveldown(self):
-            if self.level > 1:
+            if self.level > 0:
                 self.level -= 1
 
         def _updatestep(self):
@@ -357,6 +364,27 @@ class SnrDynamicManager(SnrManager):
 
             self.curr_snr = self.start_db + last_counter_any * self.step_db
             self.counter = last_counter_any
+
+        def _store_end(self):
+            self.end_counter = self.counter
+
+        def level_min(self):
+            if self.level == 0:
+                res = True
+
+            else:
+                res = False
+
+            return res
+
+        def _next_is_end(self):
+            if self.counter + 2 ** self.level == self.end_counter:
+                res = True
+
+            else:
+                res = False
+
+            return res
 
 
 def snr_manager_builder(rantype, statistics, config_cls, **kwargs):

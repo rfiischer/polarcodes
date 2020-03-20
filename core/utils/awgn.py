@@ -61,3 +61,20 @@ class AWGN(object):
         n = std_dev * (self.rng.randn(num_samples) + 1j * self.rng.randn(num_samples))
 
         return signal + n
+
+    def shannon_limit(self):
+        """Returns Shannon's SNR limit to free error transmission"""
+
+        spec_eff = self.bits_p_symbol * self.efficiency_factor
+        ebn0_lim = (2 ** spec_eff - 1) / spec_eff
+
+        if self.snr_unit == "EbN0_dB":
+            ret_val = ebn0_lim
+
+        elif self.snr_unit == "EsN0_dB":
+            ret_val = ebn0_lim * spec_eff
+
+        else:
+            raise ValueError('Invalid SNR unit')
+
+        return 10 * np.log10(ret_val)

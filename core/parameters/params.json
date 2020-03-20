@@ -37,6 +37,11 @@
       "default_value": "range",
       "param_text": "SNR range type: 'dynamic' or 'range'"
     },
+    "dynamic_shannon_start": {
+      "param_options": [true, false],
+      "default_value": false,
+      "param_text": "Wether to start or not on the shannon limit"
+    },
     "min_snr_db": {
       "param_options": null,
       "default_value": -2.0,

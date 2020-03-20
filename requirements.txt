@@ -1,3 +1,4 @@
+pynverse
 scipy
 astunparse==1.6.3
 autopep8==1.5

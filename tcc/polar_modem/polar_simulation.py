@@ -1,7 +1,7 @@
-from core.simulation import Simulation
-from core.utils.awgn import AWGN
-from core.utils.snr_manager import snr_manager_builder, SnrConfig
-from core.polar_modem.modem import Modem
+from tcc.core.simulation import Simulation
+from tcc.core.utils.awgn import AWGN
+from tcc.core.utils.snr_manager import snr_manager_builder, SnrConfig
+from tcc.polar_modem.modem import Modem
 
 
 class PolarSimulation(Simulation):
@@ -13,6 +13,8 @@ class PolarSimulation(Simulation):
         # Set up the simulation objects
         self.statistics.add_categories([('ber', True),
                                         ('fer', True)])
+
+        self.modem = Modem(parameters, self.rng)
 
         self.awgn = AWGN(parameters.bits_p_symbol, rng=self.rng, snr_unit=parameters.snr_unit,
                          efficiency_factor=self.modem.rate)
@@ -41,8 +43,6 @@ class PolarSimulation(Simulation):
                                                start_snr_db=start_snr_db,
                                                min_snr_step_db=parameters.min_snr_step_db,
                                                start_level=parameters.start_dynamic_level)
-
-        self.modem = Modem(parameters, self.rng)
 
     def run(self):
         for snr_db in self.snr_manager:

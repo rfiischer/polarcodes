@@ -8,10 +8,10 @@ Created on 10/03/2020 20:00
 
 import numpy as np
 
-from core.utils.mod_demod import Modulator, Demodulator
-from core.utils.constellation import PolarConstellation
-from coding.polarcoding import PolarCoding
-from coding.polarcoding.construction import construction
+from tcc.core.utils.mod_demod import Modulator, Demodulator
+from tcc.core.utils.constellation import PolarConstellation
+from tcc.coding.polarcoding.polarcoding import PolarCoding
+from tcc.coding.polarcoding.construction import construction
 
 
 class Modem:

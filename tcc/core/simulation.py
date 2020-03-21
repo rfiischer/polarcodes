@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 
-from core.utils.statistics import Statistics
+from tcc.core.utils.statistics import Statistics
 
 
 class Simulation(ABC):

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from core.utils.int_bit import int2bit_constructor, bit2int_constructor
+from tcc.core.utils.int_bit import int2bit_constructor, bit2int_constructor
 
 
 class Modulator(object):

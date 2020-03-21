@@ -8,7 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from coding.polarcoding.polarfuncs import compute_node, encode
+from tcc.coding.polarcoding.polarfuncs import compute_node, encode
 
 
 class PolarCoding(object):

@@ -6,7 +6,7 @@ Created on 10/03/2020 20:58
 @author: Rodrigo Fischer (rodrigoarfischer@gmail.com)
 """
 
-from core.main import main
+from tcc.main import main
 import multiprocessing as mp
 
 methods = ['bhattacharyya', 'tahir', 'mdega', 'dega']

@@ -7,7 +7,6 @@ Created on 17/03/2020 10:17
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import erfc
 
 import glob
 

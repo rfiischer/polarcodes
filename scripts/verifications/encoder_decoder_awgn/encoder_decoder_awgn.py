@@ -9,14 +9,14 @@ Created on 17/02/2020 17:33
 import numpy as np
 from time import time, strftime, gmtime
 
-from coding.polarcoding import PolarCoding
-from core.utils.awgn import AWGN
-from core.utils.constellation import PolarConstellation
-from core.utils.mod_demod import Modulator, Demodulator
+from tcc.coding.polarcoding import PolarCoding
+from tcc.core.utils.awgn import AWGN
+from tcc.core.utils.constellation import PolarConstellation
+from tcc.core.utils.mod_demod import Modulator, Demodulator
 
 n = 4
 k = 1
-frames = 1000000
+frames = 10
 snr = 1 + 10 * np.log10(0.5)
 rng = np.random.RandomState(seed=12465)
 awgn = AWGN(1, rng, snr_unit="EsN0_dB")

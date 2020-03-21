@@ -10,9 +10,9 @@ from time import time, strftime, gmtime
 import logging
 import subprocess
 
-from core.polar_modem.polar_simulation import PolarSimulation
-from core.parameters.parameter_handler import ParameterHandler
-from core.logger import setup_logging
+from tcc.polar_modem.polar_simulation import PolarSimulation
+from tcc.core.parameters.parameter_handler import ParameterHandler
+from tcc.core.logger import setup_logging
 
 
 def main(parameter_file=None, args=None):

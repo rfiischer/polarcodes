@@ -8,7 +8,7 @@ Created on 17/03/2020 15:12
 import numpy as np
 import matplotlib.pyplot as plt
 
-from coding.polarcoding.construction import tahir
+from tcc.coding.polarcoding.construction import tahir
 
 data = np.loadtxt('results.txt')
 

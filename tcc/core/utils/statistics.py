@@ -63,6 +63,10 @@ class Statistics:
             current_snr = self.last_snr['data'][event_tuple[0]]
             current_snr['counter'].append(event_tuple[1])
             current_snr['total'].append(event_tuple[2])
+
+    def gen_stats(self):
+        for key in self.key_list:
+            current_snr = self.last_snr['data'][key]
             current_snr['length'] = len(current_snr['total'])
             if current_snr['length'] > 2:
                 if not any(np.array(current_snr['counter']) - current_snr['counter'][0]):

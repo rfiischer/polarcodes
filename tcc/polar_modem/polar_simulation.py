@@ -87,6 +87,7 @@ class PolarSimulation(Simulation):
                 self.job_queue.join()
 
                 self.statistics.update_from_queue(self.results_queue)
+                self.statistics.gen_stats()
 
             # Generate statistics
             self.statistics.gen_rate()

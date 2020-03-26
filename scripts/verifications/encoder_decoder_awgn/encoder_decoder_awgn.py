@@ -16,7 +16,7 @@ from tcc.core.utils.mod_demod import Modulator, Demodulator
 
 n = 4
 k = 1
-frames = 10
+frames = 1000000
 snr = 1 + 10 * np.log10(0.5)
 rng = np.random.RandomState(seed=12465)
 awgn = AWGN(1, rng, snr_unit="EsN0_dB")

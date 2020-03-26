@@ -3,6 +3,7 @@ import datetime
 import os
 import logging
 from scipy.stats import bayes_mvs
+from queue import Empty
 
 
 class Statistics:
@@ -75,6 +76,16 @@ class Statistics:
 
             if any(current_snr['counter']):
                 current_snr['any'] = True
+
+    def update_from_queue(self, queue):
+        while True:
+            try:
+                args = queue.get(block=False)
+                self.update_stats(*args)
+                queue.task_done()
+
+            except Empty:
+                break
 
     def write_to_file(self):
         """

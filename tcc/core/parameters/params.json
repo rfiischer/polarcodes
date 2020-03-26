@@ -158,5 +158,17 @@
       "default_value": 0,
       "param_text": "Base design SNR"
     }
+  },
+  "RUN": {
+    "num_workers": {
+      "param_options": null,
+      "default_value": 4,
+      "param_text": "Num of TXRX processes"
+    },
+    "frame_pack_size": {
+      "param_options": null,
+      "default_value": 4,
+      "param_text": "Num of frames to be processed by the workers before updating statistics"
+    }
   }
 }

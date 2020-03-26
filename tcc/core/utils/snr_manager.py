@@ -125,19 +125,22 @@ class SnrRangeManager(SnrManager):
 
         def __iter__(self):
             self.stop = False
-            self.snrrange = np.arange(self.min_db, self.max_db + self.step_db, step=self.step_db).__iter__()
+            self.range = np.arange(self.min_db, self.max_db + self.step_db, step=self.step_db)
+            self.snrrange = self.range.__iter__()
+            self.snr_id = np.arange(0, len(self.range)).__iter__()
             self.snr_list = []
             return self
 
         def __next__(self):
             if not self.stop:
                 next_snr = next(self.snrrange)
+                next_id = next(self.snr_id)
                 self.snr_list.append(next_snr)
 
             else:
                 raise StopIteration
 
-            return next_snr
+            return next_snr, next_id
 
 
 class SnrDynamicManager(SnrManager):
@@ -252,7 +255,7 @@ class SnrDynamicManager(SnrManager):
                 raise StopIteration
 
             self.last_counter = self.counter
-            return self.curr_snr
+            return self.curr_snr, self.counter
 
         def state_transition(self):
             if self.state == "start":

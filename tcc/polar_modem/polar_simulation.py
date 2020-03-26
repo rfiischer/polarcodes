@@ -1,24 +1,46 @@
+"""
+
+Created on 25/03/2020 21:44
+
+@author: Rodrigo Fischer (rodrigoarfischer@gmail.com)
+"""
+
+import multiprocessing as mp
+import logging
+
 from tcc.core.simulation import Simulation
-from tcc.core.utils.awgn import AWGN
+from tcc.polar_modem.polar_worker import PolarWorker
+from tcc.core.utils.statistics import Statistics
 from tcc.core.utils.snr_manager import snr_manager_builder, SnrConfig
-from tcc.polar_modem.modem import Modem
 
 
 class PolarSimulation(Simulation):
-
     def __init__(self, parameters):
-        # Call super class initialization
-        super().__init__(parameters)
+        super().__init__()
 
-        # Set up the simulation objects
+        # Logger
+        self.logger = logging.getLogger(__name__)
+
+        # Shutdown
+        self.shutdown = mp.Event()
+
+        # Statistics
+        self.statistics = Statistics(parameters)
         self.statistics.add_categories([('ber', True),
                                         ('fer', True)])
 
-        self.modem = Modem(parameters, self.rng)
+        # Get seeds
+        seeds = [parameters.seed + i for i in range(parameters.num_workers)]
 
-        self.awgn = AWGN(parameters.bits_p_symbol, rng=self.rng, snr_unit=parameters.snr_unit,
-                         efficiency_factor=self.modem.rate)
+        # Workers
+        self.num_workers = parameters.num_workers
+        self.frame_pack_size = parameters.frame_pack_size
+        self.job_queue = mp.JoinableQueue()
+        self.results_queue = mp.JoinableQueue()
+        self.workers = [PolarWorker(parameters, seed, self.results_queue, self.shutdown, self.job_queue)
+                        for seed in seeds]
 
+        # SNR Manager
         self.snr_config = SnrConfig({'counter_name': 'ber',
                                      'counter_specs': {'min_relative_accuracy': parameters.min_bit_accuracy,
                                                        'max_counter': parameters.max_bit_counter,
@@ -31,7 +53,7 @@ class PolarSimulation(Simulation):
                                                        'target_stats': parameters.frame_target_stats}})
 
         if parameters.dynamic_shannon_start:
-            start_snr_db = self.awgn.shannon_limit()
+            start_snr_db = self.workers[0].awgn.shannon_limit()
 
         else:
             start_snr_db = parameters.start_snr_db
@@ -45,29 +67,30 @@ class PolarSimulation(Simulation):
                                                start_level=parameters.start_dynamic_level)
 
     def run(self):
-        for snr_db in self.snr_manager:
+
+        # Start workers
+        worker_processes = [mp.Process(target=worker.run) for worker in self.workers]
+        for process in worker_processes:
+            process.daemon = True
+            process.start()
+
+        for snr_db, snr_id in self.snr_manager:
 
             self.statistics.add_snr(snr_db)
-            self.modem.snr = snr_db
 
             self.logger.info("Simulating SNR {}".format(snr_db))
 
             while not self.snr_manager.snr_stop():
+                for _ in range(self.frame_pack_size):
+                    self.job_queue.put((snr_db, snr_id))
 
-                # Transmit a single frame
-                tx_signal = self.modem.tx()
+                self.job_queue.join()
 
-                # Add noise to the transmitted signal
-                noise_symbols = self.awgn(tx_signal, snr=snr_db)
+                self.statistics.update_from_queue(self.results_queue)
 
-                # Get the detected user data bits
-                detected_bits = self.modem.rx(noise_symbols, self.awgn.variance)
-
-                # Get statistics
-                bit_err_cnt, frame_err_cnt = self.modem.compute_errors(detected_bits)
-
-                self.statistics.update_stats(('ber', bit_err_cnt, self.modem.K),
-                                             ('fer', frame_err_cnt, 1))
-
+            # Generate statistics
             self.statistics.gen_rate()
             self.snr_manager.sim_stop()
+
+        self.shutdown.set()
+        [process.join() for process in worker_processes]

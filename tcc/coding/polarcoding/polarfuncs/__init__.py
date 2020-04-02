@@ -10,7 +10,7 @@ import logging
 
 try:
     from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import alpha_left, alpha_right, betas, fr, fl, \
-                                                                      compute_node, encode
+                                                                      resolve_node, encode
 
 except ImportError:
     from tcc.coding.polarcoding.polarfuncs.polarfuncs import alpha_left, alpha_right, betas, fr, fl, resolve_node, \

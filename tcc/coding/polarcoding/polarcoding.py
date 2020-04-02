@@ -8,7 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import compute_node, encode
+from tcc.coding.polarcoding.polarfuncs import resolve_node, encode
 
 
 class PolarCoding(object):
@@ -86,7 +86,7 @@ class PolarCoding(object):
         def __call__(self, llr):
             dec_bits = np.zeros(self.N, dtype=np.uint8)
 
-            _ = compute_node(np.array(llr, dtype=np.float64),
+            _ = resolve_node(np.array(llr, dtype=np.float64),
                              self.N,
                              0,
                              self.encode.information,

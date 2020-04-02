@@ -14,7 +14,7 @@ import numpy as np
 # pythran export alpha_right(float64[:], uint8 list)
 # pythran export alpha_left(float64[:])
 # pythran export betas(uint8 list, uint8 list)
-# pythran export compute_node(float64[:], uint64, uint64, uint64[:], uint8[:])
+# pythran export resolve_node(float64[:], uint64, uint64, uint64[:], uint8[:])
 # pythran export encode(uint8[:], uint64)
 
 
@@ -55,7 +55,7 @@ def betas(betas_left, betas_right):
     return betas_out
 
 
-def compute_node(alphas, level, counter, information, dec_bits):
+def resolve_node(alphas, level, counter, information, dec_bits):
     """
     Recursive computation of node metrics
 
@@ -69,9 +69,9 @@ def compute_node(alphas, level, counter, information, dec_bits):
 
     if alphas.size > 1:
         alpha_l = alpha_left(alphas)
-        beta_l = compute_node(alpha_l, level // 2, counter, information, dec_bits)
+        beta_l = resolve_node(alpha_l, level // 2, counter, information, dec_bits)
         alpha_r = alpha_right(alphas, beta_l)
-        beta_r = compute_node(alpha_r, level // 2, counter + level // 2,
+        beta_r = resolve_node(alpha_r, level // 2, counter + level // 2,
                               information, dec_bits)
         beta = betas(beta_l, beta_r)
 

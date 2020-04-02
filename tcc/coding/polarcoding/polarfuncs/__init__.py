@@ -13,6 +13,6 @@ try:
                                                                       compute_node, encode
 
 except ImportError:
-    from tcc.coding.polarcoding.polarfuncs.polarfuncs import alpha_left, alpha_right, betas, fr, fl, compute_node, \
+    from tcc.coding.polarcoding.polarfuncs.polarfuncs import alpha_left, alpha_right, betas, fr, fl, resolve_node, \
                                                              encode
     logging.warning("Using pure Python implementation. To use Pythran, run the compile script.")

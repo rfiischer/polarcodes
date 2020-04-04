@@ -81,13 +81,14 @@ class PolarCoding(object):
         def __init__(self, obj):
             self.encode = obj.encode
             self.N = obj.N
+            self.n = obj.n
             self.dec_bits = None
 
         def __call__(self, llr):
             dec_bits = np.zeros(self.N, dtype=np.uint8)
 
             _ = resolve_node(np.array(llr, dtype=np.float64),
-                             self.N,
+                             self.n,
                              0,
                              self.encode.information,
                              dec_bits)

@@ -55,6 +55,12 @@ def betas(betas_left, betas_right):
     return betas_out
 
 
+# def node_classifier(n, information, frozen):
+#     iset = set(information)
+#     fset = set(frozen)
+#
+#
+
 def resolve_node(alphas, level, counter, information, dec_bits):
     """
     Recursive computation of node metrics
@@ -69,9 +75,9 @@ def resolve_node(alphas, level, counter, information, dec_bits):
 
     if alphas.size > 1:
         alpha_l = alpha_left(alphas)
-        beta_l = resolve_node(alpha_l, level // 2, counter, information, dec_bits)
+        beta_l = resolve_node(alpha_l, level - 1, 2 * counter, information, dec_bits)
         alpha_r = alpha_right(alphas, beta_l)
-        beta_r = resolve_node(alpha_r, level // 2, counter + level // 2,
+        beta_r = resolve_node(alpha_r, level - 1, 2 * counter + 1,
                               information, dec_bits)
         beta = betas(beta_l, beta_r)
 

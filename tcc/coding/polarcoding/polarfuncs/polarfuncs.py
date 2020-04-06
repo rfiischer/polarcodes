@@ -15,7 +15,8 @@ import numpy as np
 # pythran export alpha_left(float64[:])
 # pythran export betas(uint8 list, uint8 list)
 # pythran export node_classifier(uint64, uint64[:], uint64[:])
-# pythran export resolve_node(float64[:], uint64, uint64, uint8[:], uint8[:, :])
+# pythran export child_list_maker(uint64)
+# pythran export resolve_node(float64[:], uint64, uint64, uint8[:], uint8[:, :], int list list list)
 # pythran export encode(uint8[:], uint64)
 
 
@@ -77,7 +78,17 @@ def node_classifier(n, information, frozen):
     return rate_sheet
 
 
-def resolve_node(alphas, level, counter, dec_bits, node_sheet):
+def child_list_maker(n):
+    n = int(n)
+    output = [[] for _ in range(n + 1)]
+    for i in range(n + 1):
+        for j in range(2 ** i):
+            output[n - i].append([k for k in range(j * 2 ** (n - i), j * 2 ** (n - i) + 2 ** (n - i))])
+
+    return output
+
+
+def resolve_node(alphas, level, counter, dec_bits, node_sheet, child_list):
     """
     Recursive computation of node metrics
 
@@ -96,8 +107,7 @@ def resolve_node(alphas, level, counter, dec_bits, node_sheet):
     # rate-1 node
     elif node_sheet[level, counter] == 1:
         beta = [0 if alpha > 0 else 1 for alpha in alphas]
-        children = [k for k in range(counter * 2 ** level, (counter + 1) * 2 ** level)]
-        dec_bits[children] = encode(beta, level)
+        dec_bits[child_list[level][counter]] = encode(beta, level)
 
     # neither
     else:
@@ -107,12 +117,11 @@ def resolve_node(alphas, level, counter, dec_bits, node_sheet):
         elif node_sheet[level - 1, 2 * counter] == 1:
             alpha_l = alpha_left(alphas)
             beta_l = [0 if alpha > 0 else 1 for alpha in alpha_l]
-            children = [k for k in range(2 * counter * 2 ** (level - 1), (2 * counter + 1) * 2 ** (level - 1))]
-            dec_bits[children] = encode(beta_l, level - 1)
+            dec_bits[child_list[level - 1][2 * counter]] = encode(beta_l, level - 1)
 
         else:
             alpha_l = alpha_left(alphas)
-            beta_l = resolve_node(alpha_l, level - 1, 2 * counter, dec_bits, node_sheet)
+            beta_l = resolve_node(alpha_l, level - 1, 2 * counter, dec_bits, node_sheet, child_list)
 
         if node_sheet[level - 1, 2 * counter + 1] == 0:
             beta_r = [0] * 2 ** (level - 1)
@@ -120,12 +129,11 @@ def resolve_node(alphas, level, counter, dec_bits, node_sheet):
         elif node_sheet[level - 1, 2 * counter + 1] == 1:
             alpha_r = alpha_right(alphas, beta_l)
             beta_r = [0 if alpha > 0 else 1 for alpha in alpha_r]
-            children = [k for k in range((2 * counter + 1) * 2 ** (level - 1), 2 * (counter + 1) * 2 ** (level - 1))]
-            dec_bits[children] = encode(beta_r, level - 1)
+            dec_bits[child_list[level - 1][2 * counter + 1]] = encode(beta_r, level - 1)
 
         else:
             alpha_r = alpha_right(alphas, beta_l)
-            beta_r = resolve_node(alpha_r, level - 1, 2 * counter + 1, dec_bits, node_sheet)
+            beta_r = resolve_node(alpha_r, level - 1, 2 * counter + 1, dec_bits, node_sheet, child_list)
 
         beta = betas(beta_l, beta_r)
 

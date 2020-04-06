@@ -15,7 +15,7 @@ import numpy as np
 # pythran export alpha_left(float64[:])
 # pythran export betas(uint8 list, uint8 list)
 # pythran export node_classifier(uint64, uint64[:], uint64[:])
-# pythran export resolve_node(float64[:], uint64, uint64, uint8[:], uint64[:, :])
+# pythran export resolve_node(float64[:], uint64, uint64, uint8[:], uint8[:, :])
 # pythran export encode(uint8[:], uint64)
 
 
@@ -60,19 +60,19 @@ def node_classifier(n, information, frozen):
     iset = set(information)
     fset = set(frozen)
 
-    rate_sheet = np.zeros((n + 1, 2 ** n), dtype=np.uint8)
-    for i in range(n, -1, -1):
+    rate_sheet = np.zeros((int(n + 1), int(2 ** n)), dtype=np.uint8)
+    for i in range(n + 1):
         for j in range(2 ** i):
             children = {k for k in range(j * 2 ** (n - i), j * 2 ** (n - i) + 2 ** (n - i))}
 
             if children.issubset(iset):
-                rate_sheet[n - i, j] = 1
+                rate_sheet[int(n - i), j] = 1
 
             elif children.issubset(fset):
-                rate_sheet[n - i, j] = 0
+                rate_sheet[int(n - i), j] = 0
 
             else:
-                rate_sheet[n - i, j] = 2
+                rate_sheet[int(n - i), j] = 2
 
     return rate_sheet
 

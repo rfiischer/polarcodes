@@ -97,6 +97,7 @@ def resolve_node(alphas, level, counter, dec_bits, node_sheet, child_list):
     :param counter: leaf counter
     :param dec_bits: decoded bits array
     :param node_sheet: if node is rate-0, rate-1 or neither
+    :param child_list: given a level and a node, give a list of the child leaves
     :return: betas
     """
 

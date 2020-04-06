@@ -8,7 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import resolve_node, encode
+from tcc.coding.polarcoding.polarfuncs import resolve_node, encode, node_classifier
 
 
 class PolarCoding(object):
@@ -73,6 +73,7 @@ class PolarCoding(object):
             self.K = bits.size
             self.rate = self.K / self.N
             self.information = self.rel_idx[:bits.size]
+            self.frozen = self.rel_idx[bits.size:]
             bit_vector = np.zeros(self.N, dtype=np.uint8)
             bit_vector[self.rel_idx[:bits.size]] = bits
             return encode(bit_vector, self.n)
@@ -86,10 +87,11 @@ class PolarCoding(object):
 
         def __call__(self, llr):
             dec_bits = np.zeros(self.N, dtype=np.uint8)
+            node_sheet = node_classifier(self.n, self.encode.information, self.encode.frozen)
 
             _ = resolve_node(np.array(llr, dtype=np.float64),
                              self.n,
                              0,
-                             self.encode.information,
-                             dec_bits)
+                             dec_bits,
+                             node_sheet)
             return dec_bits[self.encode.information]

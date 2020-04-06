@@ -10,7 +10,7 @@ import numpy as np
 
 from tcc.coding.polarcoding import PolarCoding
 
-permutation = [0, 1, 2, 4, 3, 5, 6, 7]
+permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 pc = PolarCoding(3, permutation)
 
 for K in range(1, 9):

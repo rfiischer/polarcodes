@@ -16,7 +16,7 @@ class PolarCoding(object):
     Implements polar encoding and decoding
     """
 
-    def __init__(self, n, rel_idx=None):
+    def __init__(self, n, k, rel_idx=None):
         """
 
         :param n: Block size N = 2^n
@@ -25,11 +25,14 @@ class PolarCoding(object):
 
         self.N = 2 ** n
         self.n = n
+        self.K = k
+        self.rate = self.K / self.N
 
         self.F = np.array([[1, 0], [1, 1]], dtype=np.uint8)
 
         self.Fn = self._generate_g()
 
+        # TODO: verify rel_idx after SNR change
         if rel_idx is not None:
             if not np.array_equal(np.sort(rel_idx), np.arange(0, self.N)):
                 raise ValueError("Invalid frozen bits indexes: rel_idx should be a permutation vector of size 2^n")
@@ -38,6 +41,9 @@ class PolarCoding(object):
             rel_idx = np.arange(0, self.N)
 
         self.rel_idx = np.array(rel_idx, dtype=np.uint64)
+
+        self.information = self.rel_idx[:self.K]
+        self.frozen = self.rel_idx[self.K:]
 
         self.encode = self.Encode(self)
         self.decode = self.Decode(self)
@@ -58,10 +64,7 @@ class PolarCoding(object):
         def __init__(self, obj):
             self.N = obj.N
             self.n = obj.n
-            self.rel_idx = obj.rel_idx
-            self.rate = None
-            self.K = None
-            self.information = None
+            self.information = obj.information
 
         def __call__(self, bits):
             """
@@ -70,30 +73,26 @@ class PolarCoding(object):
             :return: b * Fn
             """
 
-            self.K = bits.size
-            self.rate = self.K / self.N
-            self.information = self.rel_idx[:bits.size]
-            self.frozen = self.rel_idx[bits.size:]
             bit_vector = np.zeros(self.N, dtype=np.uint8)
-            bit_vector[self.rel_idx[:bits.size]] = bits
+            bit_vector[self.information] = bits
             return encode(bit_vector, self.n)
 
     class Decode(object):
         def __init__(self, obj):
-            self.encode = obj.encode
             self.N = obj.N
             self.n = obj.n
+            self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
+            self.child_list = child_list_maker(self.n)
+            self.information = obj.information
             self.dec_bits = None
 
         def __call__(self, llr):
             dec_bits = np.zeros(self.N, dtype=np.uint8)
-            node_sheet = node_classifier(self.n, self.encode.information, self.encode.frozen)
-            child_list = child_list_maker(self.n)
 
             _ = resolve_node(np.array(llr, dtype=np.float64),
                              self.n,
                              0,
                              dec_bits,
-                             node_sheet,
-                             child_list)
-            return dec_bits[self.encode.information]
+                             self.node_sheet,
+                             self.child_list)
+            return dec_bits[self.information]

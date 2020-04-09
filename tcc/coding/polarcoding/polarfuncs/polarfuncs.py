@@ -46,6 +46,16 @@ def alpha_left(alphas):
     return alphas_out
 
 
+def phi(a, b, u):
+    if (np.sign(b) == 1 and u == 0) or (np.sign(b) == -1 and u == 1):
+        out = a
+
+    else:
+        out = a + np.abs(b)
+
+    return out
+
+
 def betas(betas_left, betas_right):
     betas_size = len(betas_left)
     out_size = 2 * betas_size
@@ -139,6 +149,97 @@ def resolve_node(alphas, level, counter, dec_bits, node_sheet, child_list):
         beta = betas(beta_l, beta_r)
 
     return beta
+
+
+def get_next_alpha(alphas, beta_tree, beta_sheet, level, counter):
+    if beta_sheet[level - 1][2 * counter]:
+        alpha_r = alpha_right(alphas, beta_tree[level - 1][2 * counter])
+        if level == 1:
+            alpha = alpha_r
+
+        else:
+            alpha = get_next_alpha(alpha_r, beta_tree, beta_sheet, level - 1, 2 * counter + 1)
+
+    else:
+        alpha_l = alpha_left(alphas)
+        if level == 1:
+            alpha = alpha_l
+
+        else:
+            alpha = get_next_alpha(alpha_l, beta_tree, beta_sheet, level - 1, 2 * counter)
+
+    return alpha
+
+
+def update_betas(n, beta_tree, beta_sheet):
+    n = int(n)
+    beta_sheet = [item.copy() for item in beta_sheet]
+    for i in range(1, n + 1):
+        for j in range(2 ** (n - i)):
+            if beta_sheet[i - 1][2 * j] and beta_sheet[i - 1][2 * j + 1] and (not beta_sheet[i][j]):
+                beta_tree[i][j] = betas(beta_tree[i - 1][2 * j], beta_tree[i - 1][2 * j + 1])
+                beta_sheet[i][j] = True
+
+    return beta_sheet
+
+
+def beta_maker(n, node_sheet):
+    n = int(n)
+    beta_tree = [[] for _ in range(n + 1)]
+    beta_sheet = [[] for _ in range(n + 1)]
+    for i in range(n + 1):
+        for j in range(2 ** i):
+            beta_tree[n - i].append([0] * 2 ** (n - i))
+            if node_sheet[n - i][j] == 0:
+                beta_sheet[n - i].append(True)
+
+            else:
+                beta_sheet[n - i].append(False)
+
+    return beta_tree, beta_sheet
+
+
+def list_decode(n, list_size, alphas, information, beta_trees, beta_sheet):
+    paths = [0]
+    metrics = [0]
+
+    for index in sorted(information):
+
+        next_metrics = []
+
+        for path in paths:
+            alpha = get_next_alpha(alphas, beta_trees[path], beta_sheet, n, 0)
+            pm0 = phi(metrics[path], alpha, 0)
+            pm1 = phi(metrics[path], alpha, 1)
+
+            next_metrics.extend([[0, path, pm0], [1, path, pm1]])
+
+        next_metrics_sorted = [item for item in sorted(next_metrics, key=lambda item: item[2])]
+
+        num_final_paths = len(next_metrics_sorted) if len(next_metrics_sorted) <= list_size else list_size
+        final_paths = next_metrics_sorted[:num_final_paths]
+
+        metrics = []
+        new_beta_trees = []
+        for path in final_paths:
+            new_beta_tree = [[item.copy() for item in items] for items in beta_trees[path[1]]]
+            new_beta_tree[0][index] = [path[0]]
+            new_beta_trees.append(new_beta_tree)
+
+            metrics.append(path[2])
+
+        beta_trees = new_beta_trees
+
+        beta_sheet[0][index] = True
+        old_beta_sheet = beta_sheet
+        for beta_tree in beta_trees:
+            beta_sheet = update_betas(n, beta_tree, old_beta_sheet)
+
+        paths = [i for i in range(num_final_paths)]
+
+    decoded_bits = np.array([bit[0] for bit in beta_trees[0][0]], dtype=np.uint8)
+
+    return decoded_bits
 
 
 def encode(bits, n):

@@ -11,9 +11,10 @@ import logging
 try:
     from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import alpha_left, alpha_right, betas, fr, fl, \
                                                                       resolve_node, encode, node_classifier, \
-                                                                      child_list_maker
+                                                                      child_list_maker, list_decode, beta_maker
 
 except ImportError:
     from tcc.coding.polarcoding.polarfuncs.polarfuncs import alpha_left, alpha_right, betas, fr, fl, resolve_node, \
-                                                             encode, node_classifier, child_list_maker
+                                                             encode, node_classifier, child_list_maker, list_decode, \
+                                                             beta_maker
     logging.warning("Using pure Python implementation. To use Pythran, run the compile script.")

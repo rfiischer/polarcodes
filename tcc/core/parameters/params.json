@@ -153,6 +153,17 @@
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
     },
+    "decoding_algorithm": {
+      "param_options": ["sc",
+                        "list-sc"],
+      "default_value": "sc",
+      "param_text": "Polar code decoding algorithm"
+    },
+    "list_size": {
+      "param_options": null,
+      "default_value": 4,
+      "param_text": "List decoding size"
+    },
     "base_design_snr": {
       "param_options": null,
       "default_value": 0,

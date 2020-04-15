@@ -17,7 +17,7 @@ class PolarCoding(object):
     Implements polar encoding and decoding
     """
 
-    def __init__(self, n, k, rel_idx=None, decoding_type='list-sc', list_size=4):
+    def __init__(self, n, k, rel_idx=None, decoding_type='sc', list_size=None):
         """
 
         :param n: Block size N = 2^n

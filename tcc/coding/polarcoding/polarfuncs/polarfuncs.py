@@ -10,14 +10,19 @@ import numpy as np
 
 
 # pythran export fl(float64, float64)
-# pythran export fr(float64, float64, uint8)
-# pythran export alpha_right(float64[:], uint8 list)
-# pythran export alpha_left(float64[:])
-# pythran export betas(uint8 list, uint8 list)
-# pythran export node_classifier(uint64, uint64[:], uint64[:])
-# pythran export child_list_maker(uint64)
-# pythran export resolve_node(float64[:], uint64, uint64, uint8[:], uint8[:, :], int list list list)
-# pythran export encode(uint8[:], uint64)
+# ythran export fr(float64, float64, uint8)
+"""# ythran export alpha_right(float64[:], uint8 list)
+# ythran export alpha_left(float64[:])
+# ythran export phi(float64, float64, uint8)
+# ythran export betas(uint8 list, uint8 list)
+# thran export node_classifier(uint64, uint64[:], uint64[:])
+# thran export child_list_maker(uint64)
+# thran export resolve_node(float64[:], uint64, uint64, uint8[:], uint8[:, :], uint64 list list list)
+# ythran export get_next_alpha(float64[:], uint8 list list list, bool list list, uint64, uint64)
+# ythran export update_betas(uint64, uint8 list list list, bool list list)
+# thran export beta_maker(uint64, uint8[:, :])
+# thran export list_decode(uint64, uint64, float64[:], uint64[:], uint8 list list list list, bool list list)
+# thran export encode(uint8[:], uint64)"""
 
 
 def fl(a, b):
@@ -173,14 +178,13 @@ def get_next_alpha(alphas, beta_tree, beta_sheet, level, counter):
 
 def update_betas(n, beta_tree, beta_sheet):
     n = int(n)
-    beta_sheet = [item.copy() for item in beta_sheet]
     for i in range(1, n + 1):
         for j in range(2 ** (n - i)):
             if beta_sheet[i - 1][2 * j] and beta_sheet[i - 1][2 * j + 1] and (not beta_sheet[i][j]):
                 beta_tree[i][j] = betas(beta_tree[i - 1][2 * j], beta_tree[i - 1][2 * j + 1])
                 beta_sheet[i][j] = True
 
-    return beta_sheet
+    return beta_tree, beta_sheet
 
 
 def beta_maker(n, node_sheet):
@@ -221,19 +225,18 @@ def list_decode(n, list_size, alphas, information, beta_trees, beta_sheet):
 
         metrics = []
         new_beta_trees = []
+        old_beta_sheet = beta_sheet
+        beta_sheet[0][index] = True
         for path in final_paths:
-            new_beta_tree = [[item.copy() for item in items] for items in beta_trees[path[1]]]
+            new_beta_tree = [[[item for item in items] for items in parent] for parent in beta_trees[path[1]]]
             new_beta_tree[0][index] = [path[0]]
-            new_beta_trees.append(new_beta_tree)
 
+            new_beta_tree, beta_sheet = update_betas(n, new_beta_tree, old_beta_sheet)
+
+            new_beta_trees.append(new_beta_tree)
             metrics.append(path[2])
 
         beta_trees = new_beta_trees
-
-        beta_sheet[0][index] = True
-        old_beta_sheet = beta_sheet
-        for beta_tree in beta_trees:
-            beta_sheet = update_betas(n, beta_tree, old_beta_sheet)
 
         paths = [i for i in range(num_final_paths)]
 

@@ -7,6 +7,7 @@ Created on 25/03/2020 21:44
 
 import multiprocessing as mp
 import logging
+import numpy as np
 
 from tcc.core.simulation import Simulation
 from tcc.polar_modem.polar_worker import PolarWorker
@@ -30,7 +31,8 @@ class PolarSimulation(Simulation):
                                         ('fer', True)])
 
         # Get seeds
-        seeds = [parameters.seed + i for i in range(parameters.num_workers)]
+        rng = np.random.RandomState(parameters.seed)
+        seeds = [rng.randint(0, 2 ** 32) for _ in range(parameters.num_workers)]
 
         # Workers
         self.num_workers = parameters.num_workers

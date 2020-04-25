@@ -75,7 +75,6 @@ class Statistics:
             try:
                 args = queue.get(block=False)
                 self.update_stats(*args)
-                queue.task_done()
 
             except Empty:
                 break

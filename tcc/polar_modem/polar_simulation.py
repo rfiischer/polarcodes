@@ -38,7 +38,7 @@ class PolarSimulation(Simulation):
         self.num_workers = parameters.num_workers
         self.frame_pack_size = parameters.frame_pack_size
         self.job_queue = mp.JoinableQueue()
-        self.results_queue = mp.JoinableQueue()
+        self.results_queue = mp.Queue()
         self.workers = [PolarWorker(parameters, seed, self.results_queue, self.shutdown, self.job_queue)
                         for seed in seeds]
 

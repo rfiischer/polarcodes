@@ -32,7 +32,7 @@ class PolarSimulation(Simulation):
 
         # Get seeds
         rng = np.random.RandomState(parameters.seed)
-        seeds = [rng.randint(0, 2 ** 32) for _ in range(parameters.num_workers)]
+        seeds = [rng.randint(0, 2 ** 32, dtype=np.int64) for _ in range(parameters.num_workers)]
 
         # Workers
         self.num_workers = parameters.num_workers

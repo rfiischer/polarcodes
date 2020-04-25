@@ -27,10 +27,10 @@ class SnrManager(ABC):
     def snr_stop(self):
         max_stop = self._check_max()
         min_stop = self._check_min()
-        at_leat_one_bigger = self._check_stat()
+        min_num_events = self._check_min_events()
         all_event = not self._check_any_empty()
 
-        return max_stop or (all_event and (not at_leat_one_bigger) and min_stop)
+        return max_stop or (all_event and min_num_events and min_stop)
 
     def _check_any_empty(self):
         at_least_one_empty = False
@@ -68,19 +68,15 @@ class SnrManager(ABC):
 
         return min_stop
 
-    def _check_stat(self):
-        at_leat_one_bigger = False
+    def _check_min_events(self):
+        min_event_stop = True
         for counter_name in self.config_cls:
-            if self.statistics.last_snr['data'][counter_name]['stats'].get('conf') >= 0:
-                if self.config_cls[counter_name].get('min_relative_accuracy') is not None:
-                    if self.statistics.last_snr['data'][counter_name]['stats']['conf'] > \
-                            self.config_cls[counter_name]['min_relative_accuracy']:
-                        at_leat_one_bigger = True
+            if self.config_cls[counter_name].get('min_event_counter') is not None:
+                if np.sum(self.statistics.last_snr['data'][counter_name]['counter']) < \
+                        self.config_cls[counter_name]['min_event_counter']:
+                    min_event_stop = False
 
-            else:
-                at_leat_one_bigger = True
-
-        return at_leat_one_bigger
+        return min_event_stop
 
     @abstractmethod
     def sim_stop(self):

@@ -44,12 +44,12 @@ class PolarSimulation(Simulation):
 
         # SNR Manager
         self.snr_config = SnrConfig({'counter_name': 'ber',
-                                     'counter_specs': {'min_relative_accuracy': parameters.min_bit_accuracy,
+                                     'counter_specs': {'min_event_counter': parameters.min_bit_events,
                                                        'max_counter': parameters.max_bit_counter,
                                                        'min_counter': parameters.min_bit_counter,
                                                        'target_stats': parameters.bit_target_stats}},
                                     {'counter_name': 'fer',
-                                     'counter_specs': {'min_relative_accuracy': parameters.min_frame_accuracy,
+                                     'counter_specs': {'min_event_counter': parameters.min_frame_events,
                                                        'max_counter': parameters.max_frame_counter,
                                                        'min_counter': parameters.min_frame_counter,
                                                        'target_stats': parameters.frame_target_stats}})

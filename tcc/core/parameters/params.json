@@ -82,10 +82,10 @@
     }
   },
   "SIMULATION": {
-    "min_bit_accuracy": {
+    "min_bit_events": {
       "param_options": null,
-      "default_value": 0.1,
-      "param_text": "Minimum relative bit error rate accuracy"
+      "default_value": null,
+      "param_text": "Minimum number of bit error events"
     },
     "max_bit_counter": {
       "param_options": null,
@@ -102,10 +102,10 @@
       "default_value": [0, 1],
       "param_text": "Desired range for BER statistics"
     },
-    "min_frame_accuracy": {
+    "min_frame_events": {
       "param_options": null,
-      "default_value": 0.1,
-      "param_text": "Minimum relative frame error rate accuracy"
+      "default_value": 10,
+      "param_text": "Minimum number of frame error events"
     },
     "max_frame_counter": {
       "param_options": null,

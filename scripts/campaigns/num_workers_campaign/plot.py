@@ -7,14 +7,15 @@ Created on 17/03/2020 10:17
 
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 import glob
 
 
-def plot_ber(graphs, legends, title, xlabel=r'$E_b/N_0$ (dB)', ylabel='BER', ylim=None, xlim=None):
+def plot_ber(graphs, legends, title, linestyle, xlabel=r'$E_b/N_0$ (dB)', ylabel='BER', ylim=None, xlim=None):
     fig, ax = plt.subplots()
     for i, graph in enumerate(graphs):
-        ax.semilogy(graph[0], graph[1])
+        ax.semilogy(graph[0], graph[1], linestyle[i], fillstyle='none', markersize=8)
 
     ax.grid(which='both')
     ax.legend(legends)
@@ -36,10 +37,13 @@ plt.rcParams.update({'font.size': 12})
 
 plot_list = []
 methods = []
+num_workers = []
 
 for subdir in glob.glob('results/**/'):
     method_name = subdir.split('\\')[-2]
-    methods.append(method_name)
+    workers = int(re.split('(\d+)', method_name)[-2])
+    num_workers.append(workers)
+    methods.append('{} Workers'.format(workers))
 
     ber = np.loadtxt('results//{}//ber.txt'.format(method_name))[:, 1]
     ber_range = np.loadtxt('results//{}//ber.txt'.format(method_name))[:, 0]
@@ -50,11 +54,19 @@ for subdir in glob.glob('results/**/'):
     plot_list.append([ber_range, ber])
 
 # QPSK plot - EbN0
+methods = sorted(num_workers)
+plot_list = [i[0] for i in sorted(zip(plot_list, num_workers), key=lambda item: item[1])]
+
+desired_curves = [0, 4, 8]
+methods = [methods[i] for i in desired_curves]
+plot_list = [plot_list[i] for i in desired_curves]
+
 plot_ber(plot_list,
          tuple(methods),
-         "Polar",
+         "",
+         ['g--o', 'r-.^', 'b:*'],
          ylim=[1e-7, 1],
-         xlim=[-3, 0],
+         xlim=[-3.2, 0.2],
          xlabel=r'$E_s/N_0$ (dB)')
 
 plt.show()

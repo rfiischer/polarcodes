@@ -8,8 +8,7 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import resolve_node, encode, node_classifier, child_list_maker, list_decode, \
-                                              beta_maker
+from tcc.coding.polarcoding.polarfuncs import sc_decode, encode, address_list_factory, node_classifier, sc_scheduler
 
 
 class PolarCoding(object):
@@ -87,23 +86,24 @@ class PolarCoding(object):
                 self.N = obj.N
                 self.n = obj.n
                 self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
-                self.child_list = child_list_maker(self.n)
+                self.address_list = address_list_factory(self.n)
+                self.tasks = sc_scheduler(self.n, self.node_sheet)
                 self.information = obj.information
                 self.dec_bits = None
 
                 self.decoder = self.sc_dec
 
-            elif obj.dec_type == 'list-sc':
-                self.n = obj.n
-                self.list_size = obj.list_size
-                self.information = obj.information
-
-                node_sheet = node_classifier(self.n, obj.information, obj.frozen)
-                beta_tree, beta_sheet = beta_maker(self.n, node_sheet)
-                self.beta_trees = [beta_tree]
-                self.beta_sheet = beta_sheet
-
-                self.decoder = self.list_sc_dec
+            # elif obj.dec_type == 'list-sc':
+            #     self.n = obj.n
+            #     self.list_size = obj.list_size
+            #     self.information = obj.information
+            #
+            #     node_sheet = node_classifier(self.n, obj.information, obj.frozen)
+            #     beta_tree, beta_sheet = beta_maker(self.n, node_sheet)
+            #     self.beta_trees = [beta_tree]
+            #     self.beta_sheet = beta_sheet
+            #
+            #     self.decoder = self.list_sc_dec
 
             else:
                 raise ValueError('Invalid decoding type: {}'.format(obj.dec_type))
@@ -112,17 +112,13 @@ class PolarCoding(object):
             return self.decoder(llr)
 
         def sc_dec(self, llr):
-            dec_bits = np.zeros(self.N, dtype=np.uint8)
-
-            _ = resolve_node(np.array(llr, dtype=np.float64),
-                             self.n,
-                             0,
-                             dec_bits,
-                             self.node_sheet,
-                             self.child_list)
+            alpha_array = np.zeros((self.n + 1) * 2 ** self.n, dtype=np.float64)
+            alpha_array[:self.N] = llr
+            beta_array = np.zeros((self.n + 1) * 2 ** self.n, dtype=np.uint8)
+            dec_bits = sc_decode(alpha_array, beta_array, self.tasks, self.address_list)
             return dec_bits[self.information]
 
-        def list_sc_dec(self, llr):
-            dec_bits = list_decode(self.n, self.list_size, np.array(llr, dtype=np.float64),
-                                   self.information, self.beta_trees, self.beta_sheet)
-            return dec_bits[self.information]
+        # def list_sc_dec(self, llr):
+        #     dec_bits = list_decode(self.n, self.list_size, np.array(llr, dtype=np.float64),
+        #                            self.information, self.beta_trees, self.beta_sheet)
+        #     return dec_bits[self.information]

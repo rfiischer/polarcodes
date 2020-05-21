@@ -114,8 +114,7 @@ class PolarCoding(object):
         def sc_dec(self, llr):
             alpha_array = np.zeros((self.n + 1) * 2 ** self.n, dtype=np.float64)
             alpha_array[:self.N] = llr
-            beta_array = np.zeros((self.n + 1) * 2 ** self.n, dtype=np.uint8)
-            dec_bits = sc_decode(alpha_array, beta_array, self.tasks, self.address_list)
+            dec_bits = sc_decode(alpha_array, self.tasks, self.address_list)
             return dec_bits[self.information]
 
         # def list_sc_dec(self, llr):

@@ -17,7 +17,7 @@ import numpy as np
 # pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
 # pythran export betas(uint8[:], uint32[:, :], uint32)
 # pythran export encode(uint8[:], uint8)
-# pythran export sc_decode(float64[:], uint8[:], uint32 list list, uint32[:, :])
+# pythran export sc_decode(float64[:], uint32 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
 # This is a consequence of the linear memory addressing used with 32 bit addresses
@@ -324,10 +324,12 @@ def encode(bits, n):
 
 
 # SC decoding function
-def sc_decode(alpha_array, beta_array, tasks, address_list):
+def sc_decode(alpha_array, tasks, address_list):
     """
     Perform the SC polar decoding.
     """
+
+    beta_array = np.zeros(alpha_array.size, dtype=np.uint8)
 
     for task in tasks:
 

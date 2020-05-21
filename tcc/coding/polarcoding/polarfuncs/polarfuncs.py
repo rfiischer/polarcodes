@@ -17,7 +17,7 @@ import numpy as np
 # pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
 # pythran export betas(uint8[:], uint32[:, :], uint32)
 # pythran export encode(uint8[:], uint8)
-# pythran export sc_decode(float64[:], uint32 list list, uint32[:, :])
+# pythran export sc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
 # This is a consequence of the linear memory addressing used with 32 bit addresses
@@ -324,12 +324,15 @@ def encode(bits, n):
 
 
 # SC decoding function
-def sc_decode(alpha_array, tasks, address_list):
+def sc_decode(n, alphas, tasks, address_list):
     """
     Perform the SC polar decoding.
     """
 
-    beta_array = np.zeros(alpha_array.size, dtype=np.uint8)
+    size = (n + 1) * 2 ** n
+    alpha_array = np.zeros(size, dtype=np.float64)
+    alpha_array[:2 ** n] = alphas
+    beta_array = np.zeros(size, dtype=np.uint8)
 
     for task in tasks:
 
@@ -361,11 +364,39 @@ def sc_decode(alpha_array, tasks, address_list):
     return beta_array[address_list[0, 4]:]
 
 
-# def list_decode(n, list_size, alphas, information, beta_trees, beta_sheet):
-#     paths = [0]
-#     metrics = [0]
+# def list_decode(n, list_size, alphas, tasks, address_list):
 #
-#     for index in sorted(information):
+#
+#
+#     for task in tasks:
+#         if task[1] == 1:
+#             start_h = address_list[task[0], 0]
+#             size = address_list[task[0], 5]
+#             level = address_list[task[0], 6]
+#             start_child = address_list[task[0], 4]
+#             node_betas = np.array([0 if alpha > 0 else 1 for alpha in alpha_array[start_h: start_h + size]],
+#                                   dtype=np.uint8)
+#             if size > 1:
+#                 leaf_betas = encode(node_betas, level)
+#
+#             else:
+#                 leaf_betas = node_betas
+#
+#             beta_array[start_child: start_child + size] = leaf_betas
+#             beta_array[start_h: start_h + size] = node_betas
+#
+#         elif task[1] == 2:
+#             betas(beta_array, address_list, task[0])
+#
+#         elif task[1] == 3:
+#             alpha_left(alpha_array, address_list, task[0])
+#
+#         elif task[1] == 4:
+#             alpha_right(alpha_array, beta_array, address_list, task[0])
+#
+#
+#
+#
 #
 #         next_metrics = []
 #

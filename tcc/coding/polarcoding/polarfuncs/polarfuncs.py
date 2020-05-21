@@ -47,6 +47,16 @@ def fr(a, b, c):
     return b + (1 - 2 * c) * a
 
 
+# def phi(a, b, u):
+#     if (np.sign(b) == 1 and u == 0) or (np.sign(b) == -1 and u == 1):
+#         out = a
+#
+#     else:
+#         out = a + np.abs(b)
+#
+#     return out
+
+
 # Factory functions
 def address_list_factory(n):
     """
@@ -140,9 +150,9 @@ def sc_scheduler(n, node_sheet):
     """
 
     # First column is the alpha flag, second column is the beta flag
-    node_flags = np.zeros((2 ** (n + 1) - 1, 2), dtype=np.uint8)
+    node_flags = np.zeros(2 ** (n + 1) - 1, dtype=np.uint8)
 
-    # Initialize rate-0 nodes and root node
+    # Initialize rate-0 nodes
     # Also count the number of rate-1 nodes that need to be get into
     rate1 = 0
     for i in range(2 ** (n + 1) - 1):
@@ -150,12 +160,10 @@ def sc_scheduler(n, node_sheet):
         parent = (i - 1) // 2
 
         if node_sheet[i] == 0:
-            node_flags[i, :] = [1, 1]
+            node_flags[i] = 1
 
         if node_sheet[i] == 1 and node_sheet[parent] == 2:
             rate1 += 1
-
-    node_flags[0, 0] = 1
 
     # Tasks
     tasks = []
@@ -177,27 +185,86 @@ def sc_scheduler(n, node_sheet):
 
             if node_sheet[nptr] == 1:
                 tasks.append([nptr, 1])
-                node_flags[nptr, 1] = 1
+                node_flags[nptr] = 1
                 nptr = parent
                 rate1 -= 1
 
             else:
-                if node_flags[left_child, 1] == 1 and node_flags[right_child, 1] == 1:
+                if node_flags[left_child] == 1 and node_flags[right_child] == 1:
                     tasks.append([nptr, 2])
-                    node_flags[nptr, 1] = 1
+                    node_flags[nptr] = 1
                     nptr = parent
 
-                elif node_flags[left_child, 1] == 0:
+                elif node_flags[left_child] == 0:
                     tasks.append([nptr, 3])
-                    node_flags[left_child, 0] = 1
                     nptr = left_child
 
                 else:
                     tasks.append([nptr, 4])
-                    node_flags[right_child, 0] = 1
                     nptr = right_child
 
     return tasks
+
+
+# def list_scheduler(n, node_sheet):
+#     """
+#     Define the decoding steps. Each tuple represents (node_address, task).
+#
+#     Tasks
+#         - 0: do nothing
+#         - 1: compute betas from alphas at rate-1 node
+#         - 2: compute node betas from child betas
+#         - 3: compute alphas left
+#         - 4: compute alpha right
+#     """
+#
+#     # First column is the alpha flag, second column is the beta flag
+#     node_flags = np.zeros(2 ** (n + 1) - 1, dtype=np.uint8)
+#
+#     # Initialize rate-0 nodes
+#     for i in range(2 ** (n + 1) - 1):
+#         if node_sheet[i] == 0:
+#             node_flags[i] = 1
+#
+#     # Count number of information leaves
+#     leaves = np.sum(node_sheet[2 ** n - 1:])
+#
+#     # Tasks
+#     tasks = []
+#
+#     # Start task scheduling
+#     if node_sheet[0] == 0:
+#         tasks.append([0, 0])
+#
+#     else:
+#         nptr = 0
+#         while leaves > 0:
+#
+#             left_child = 2 * nptr + 1
+#             right_child = 2 * nptr + 2
+#             parent = (nptr - 1) // 2
+#
+#             if nptr >= 2 ** n - 1:
+#                 tasks.append([nptr, 1])
+#                 node_flags[nptr] = 1
+#                 nptr = parent
+#                 leaves -= 1
+#
+#             else:
+#                 if node_flags[left_child] == 1 and node_flags[right_child] == 1:
+#                     tasks.append([nptr, 2])
+#                     node_flags[nptr] = 1
+#                     nptr = parent
+#
+#                 elif node_flags[left_child] == 0:
+#                     tasks.append([nptr, 3])
+#                     nptr = left_child
+#
+#                 else:
+#                     tasks.append([nptr, 4])
+#                     nptr = right_child
+#
+#     return tasks
 
 
 # Decoding functions
@@ -292,14 +359,48 @@ def sc_decode(alpha_array, beta_array, tasks, address_list):
     return beta_array[address_list[0, 4]:]
 
 
-# def phi(a, b, u):
-#     if (np.sign(b) == 1 and u == 0) or (np.sign(b) == -1 and u == 1):
-#         out = a
+# def list_decode(n, list_size, alphas, information, beta_trees, beta_sheet):
+#     paths = [0]
+#     metrics = [0]
 #
-#     else:
-#         out = a + np.abs(b)
+#     for index in sorted(information):
 #
-#     return out
+#         next_metrics = []
+#
+#         for path in paths:
+#             alpha = get_next_alpha(alphas, beta_trees[path], beta_sheet, n, 0)
+#             pm0 = phi(metrics[path], alpha, 0)
+#             pm1 = phi(metrics[path], alpha, 1)
+#
+#             next_metrics.extend([[0, path, pm0], [1, path, pm1]])
+#
+#         next_metrics_sorted = [item for item in sorted(next_metrics, key=lambda item: item[2])]
+#
+#         num_final_paths = len(next_metrics_sorted) if len(next_metrics_sorted) <= list_size else list_size
+#         final_paths = next_metrics_sorted[:num_final_paths]
+#
+#         metrics = []
+#         new_beta_trees = []
+#         old_beta_sheet = beta_sheet
+#         beta_sheet[0][index] = True
+#         for path in final_paths:
+#             new_beta_tree = [[[item for item in items] for items in parent] for parent in beta_trees[path[1]]]
+#             new_beta_tree[0][index] = [path[0]]
+#
+#             new_beta_tree, beta_sheet = update_betas(n, new_beta_tree, old_beta_sheet)
+#
+#             new_beta_trees.append(new_beta_tree)
+#             metrics.append(path[2])
+#
+#         beta_trees = new_beta_trees
+#
+#         paths = [i for i in range(num_final_paths)]
+#
+#     decoded_bits = np.array([bit[0] for bit in beta_trees[0][0]], dtype=np.uint8)
+#
+#     return decoded_bits
+
+
 #
 #
 # def child_list_maker(n):
@@ -361,45 +462,6 @@ def sc_decode(alpha_array, beta_array, tasks, address_list):
 #     return beta_tree, beta_sheet
 #
 #
-# def list_decode(n, list_size, alphas, information, beta_trees, beta_sheet):
-#     paths = [0]
-#     metrics = [0]
-#
-#     for index in sorted(information):
-#
-#         next_metrics = []
-#
-#         for path in paths:
-#             alpha = get_next_alpha(alphas, beta_trees[path], beta_sheet, n, 0)
-#             pm0 = phi(metrics[path], alpha, 0)
-#             pm1 = phi(metrics[path], alpha, 1)
-#
-#             next_metrics.extend([[0, path, pm0], [1, path, pm1]])
-#
-#         next_metrics_sorted = [item for item in sorted(next_metrics, key=lambda item: item[2])]
-#
-#         num_final_paths = len(next_metrics_sorted) if len(next_metrics_sorted) <= list_size else list_size
-#         final_paths = next_metrics_sorted[:num_final_paths]
-#
-#         metrics = []
-#         new_beta_trees = []
-#         old_beta_sheet = beta_sheet
-#         beta_sheet[0][index] = True
-#         for path in final_paths:
-#             new_beta_tree = [[[item for item in items] for items in parent] for parent in beta_trees[path[1]]]
-#             new_beta_tree[0][index] = [path[0]]
-#
-#             new_beta_tree, beta_sheet = update_betas(n, new_beta_tree, old_beta_sheet)
-#
-#             new_beta_trees.append(new_beta_tree)
-#             metrics.append(path[2])
-#
-#         beta_trees = new_beta_trees
-#
-#         paths = [i for i in range(num_final_paths)]
-#
-#     decoded_bits = np.array([bit[0] for bit in beta_trees[0][0]], dtype=np.uint8)
-#
-#     return decoded_bits
+
 #
 #

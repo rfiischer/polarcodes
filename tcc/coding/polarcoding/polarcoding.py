@@ -40,7 +40,7 @@ class PolarCoding(object):
         else:
             rel_idx = np.arange(0, self.N)
 
-        self.rel_idx = np.array(rel_idx, dtype=np.uint64)
+        self.rel_idx = np.array(rel_idx, dtype=np.uint32)
 
         self.information = self.rel_idx[:self.K]
         self.frozen = self.rel_idx[self.K:]
@@ -84,9 +84,9 @@ class PolarCoding(object):
         def __init__(self, obj):
             if obj.dec_type == 'sc':
                 self.N = obj.N
-                self.n = obj.n
+                self.n = np.uint8(obj.n)
                 self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
-                self.address_list = address_list_factory(self.n)
+                self.address_list = address_list_factory(self.n).astype(np.uint32)
                 self.tasks = sc_scheduler(self.n, self.node_sheet)
                 self.information = obj.information
                 self.dec_bits = None

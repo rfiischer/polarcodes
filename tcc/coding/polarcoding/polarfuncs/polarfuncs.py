@@ -12,12 +12,12 @@ import numpy as np
 # pythran export fr(float64, float64, uint8)
 # pythran export address_list_factory(uint8)
 # pythran export node_classifier(uint8, uint32[:], uint32[:])
-# pythran export sc_scheduler(uint8, uint8[:])
-# pythr export alpha_left(float64[:], uint32[:, :], uint32)
-# pythr export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
-# pythr export betas(uint8[:], uint32[:, :], uint32)
-# pythr export encode(uint8[:], uint8)
-# pythr export sc_decode(float64[:], uint8[:], uint8 list list, uint32[:, :])
+# not able to export sc_scheduler(uint8, uint8[:])
+# pythran export alpha_left(float64[:], uint32[:, :], uint32)
+# pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
+# pythran export betas(uint8[:], uint32[:, :], uint32)
+# pythran export encode(uint8[:], uint8)
+# pythran export sc_decode(float64[:], uint8[:], uint8 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
 # This is a consequence of the linear memory addressing used with 32 bit addresses

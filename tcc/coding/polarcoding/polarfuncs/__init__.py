@@ -9,14 +9,13 @@ Created on 06/03/2020 17:35
 # import logging
 #
 # try:
-#     from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import alpha_left, alpha_right, betas, fr, fl, \
-#                                                                       resolve_node, encode, node_classifier, \
-#                                                                       child_list_maker, list_decode, beta_maker
+#     from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import fl, fr, address_list_factory, node_classifier, \
+#                                                                       alpha_left, alpha_right, betas, encode, sc_decode
+#
+#     from tcc.coding.polarcoding.polarfuncs.polarfuncs import sc_scheduler
 #
 # except ImportError:
-#     from tcc.coding.polarcoding.polarfuncs.polarfuncs import alpha_left, alpha_right, betas, fr, fl, resolve_node, \
-#                                                              encode, node_classifier, child_list_maker, list_decode, \
-#                                                              beta_maker
-#     logging.warning("Using pure Python implementation. To use Pythran, run the compile script.")
-
-from .polarfuncs import sc_decode, encode, address_list_factory, node_classifier, sc_scheduler
+from tcc.coding.polarcoding.polarfuncs.polarfuncs import fl, fr, address_list_factory, node_classifier, \
+                                                         sc_scheduler, alpha_left, alpha_right, betas, encode, \
+                                                         sc_decode
+# logging.warning("Using pure Python implementation. To use Pythran, run the compile script.")

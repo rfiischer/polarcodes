@@ -8,8 +8,8 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import resolve_node, encode, node_classifier, child_list_maker, list_decode, \
-                                              beta_maker
+from tcc.coding.polarcoding.polarfuncs import sc_decode, list_decode, encode, address_list_factory, node_classifier, \
+                                              sc_scheduler, list_scheduler
 
 
 class PolarCoding(object):
@@ -33,7 +33,9 @@ class PolarCoding(object):
 
         self.Fn = self._generate_g()
 
-        # TODO: verify rel_idx after SNR change
+        self.dec_type = decoding_type
+        self.list_size = list_size
+
         if rel_idx is not None:
             if not np.array_equal(np.sort(rel_idx), np.arange(0, self.N)):
                 raise ValueError("Invalid frozen bits indexes: rel_idx should be a permutation vector of size 2^n")
@@ -41,13 +43,32 @@ class PolarCoding(object):
         else:
             rel_idx = np.arange(0, self.N)
 
-        self.rel_idx = np.array(rel_idx, dtype=np.uint64)
+        self._rel_idx = np.array(rel_idx, dtype=np.uint32)
 
-        self.information = self.rel_idx[:self.K]
-        self.frozen = self.rel_idx[self.K:]
+        self.information = self._rel_idx[:self.K]
+        self.frozen = self._rel_idx[self.K:]
 
-        self.dec_type = decoding_type
-        self.list_size = list_size
+        self.encode = self.Encode(self)
+        self.decode = self.Decode(self)
+
+    @property
+    def rel_idx(self):
+        return self._rel_idx
+
+    @rel_idx.setter
+    def rel_idx(self, idx):
+
+        if idx is not None:
+            if not np.array_equal(np.sort(idx), np.arange(0, self.N)):
+                raise ValueError("Invalid frozen bits indexes: rel_idx should be a permutation vector of size 2^n")
+
+        else:
+            idx = np.arange(0, self.N)
+
+        self._rel_idx = np.array(idx, dtype=np.uint32)
+
+        self.information = self._rel_idx[:self.K]
+        self.frozen = self._rel_idx[self.K:]
 
         self.encode = self.Encode(self)
         self.decode = self.Decode(self)
@@ -77,33 +98,31 @@ class PolarCoding(object):
             :return: b * Fn
             """
 
+            # TODO: pass these operations to inside 'encode'
             bit_vector = np.zeros(self.N, dtype=np.uint8)
             bit_vector[self.information] = bits
             return encode(bit_vector, self.n)
 
     class Decode(object):
         def __init__(self, obj):
+
+            self.N = obj.N
+            self.n = np.uint8(obj.n)
+            self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
+            self.address_list = address_list_factory(self.n).astype(np.uint32)
+            self.information = obj.information
+            self.dec_bits = None
+
             if obj.dec_type == 'sc':
-                self.N = obj.N
-                self.n = obj.n
-                self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
-                self.child_list = child_list_maker(self.n)
-                self.information = obj.information
-                self.dec_bits = None
+                self.tasks = sc_scheduler(self.n, self.node_sheet)
 
                 self.decoder = self.sc_dec
 
             elif obj.dec_type == 'list-sc':
-                self.n = obj.n
-                self.list_size = obj.list_size
-                self.information = obj.information
+                self.list_size = np.uint8(obj.list_size)
+                self.tasks = list_scheduler(self.n, self.node_sheet)
 
-                node_sheet = node_classifier(self.n, obj.information, obj.frozen)
-                beta_tree, beta_sheet = beta_maker(self.n, node_sheet)
-                self.beta_trees = [beta_tree]
-                self.beta_sheet = beta_sheet
-
-                self.decoder = self.list_sc_dec
+                self.decoder = self.list_dec
 
             else:
                 raise ValueError('Invalid decoding type: {}'.format(obj.dec_type))
@@ -112,17 +131,9 @@ class PolarCoding(object):
             return self.decoder(llr)
 
         def sc_dec(self, llr):
-            dec_bits = np.zeros(self.N, dtype=np.uint8)
-
-            _ = resolve_node(np.array(llr, dtype=np.float64),
-                             self.n,
-                             0,
-                             dec_bits,
-                             self.node_sheet,
-                             self.child_list)
+            dec_bits = sc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
-        def list_sc_dec(self, llr):
-            dec_bits = list_decode(self.n, self.list_size, np.array(llr, dtype=np.float64),
-                                   self.information, self.beta_trees, self.beta_sheet)
+        def list_dec(self, llr):
+            dec_bits = list_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
             return dec_bits[self.information]

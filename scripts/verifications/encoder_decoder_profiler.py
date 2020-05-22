@@ -18,6 +18,6 @@ pc = PolarCoding(n, k)
 for frame in range(0, frames):
     bits = np.random.randint(0, 2, k, dtype=np.uint8)
     encoded = pc.encode(bits)
-    llr = [5 if value == 0 else -5 for value in encoded]
+    llr = np.array([5.0 if value == 0 else -5.0 for value in encoded])
     decoded = pc.decode(llr)
     assert np.all(decoded == bits)

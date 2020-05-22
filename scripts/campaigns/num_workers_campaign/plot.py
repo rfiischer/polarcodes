@@ -14,6 +14,7 @@ import glob
 
 def plot_ber(graphs, legends, title, linestyle, xlabel=r'$E_b/N_0$ (dB)', ylabel='BER', ylim=None, xlim=None,
              fontsize=10):
+
     fig, ax = plt.subplots()
     for i, graph in enumerate(graphs):
         ax.semilogy(graph[0], graph[1], linestyle[i], fillstyle='none', markersize=8, subsy=[2, 5, 8])
@@ -22,8 +23,8 @@ def plot_ber(graphs, legends, title, linestyle, xlabel=r'$E_b/N_0$ (dB)', ylabel
     ax.legend(legends, fontsize=fontsize)
     ax.set_xlabel(xlabel, fontsize=fontsize)
     h = ax.set_ylabel(ylabel, fontsize=fontsize)
-    # h.set_rotation(0)
-    ax.set_title(r"{} for ".format(ylabel) + title)
+    h.set_rotation(0)
+    # ax.set_title(r"{} for ".format(ylabel) + title)
 
     if ylim is not None:
         ax.set_ylim(ylim)
@@ -80,6 +81,6 @@ fig, ax = plot_ber(plot_list,
 
 plt.grid(True, which="minor", ls="--")
 ax.set_yticklabels(['1e-{}'.format(i) for i in range(8, -1, -1)])
-# ax.yaxis.set_label_coords(-0.05,1.02)
+ax.yaxis.set_label_coords(-0.05, 1.02)
 
 plt.show()

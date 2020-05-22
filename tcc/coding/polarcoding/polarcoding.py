@@ -8,8 +8,8 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import sc_decode, encode, address_list_factory, node_classifier, \
-                                                         sc_scheduler, list_scheduler
+from tcc.coding.polarcoding.polarfuncs import sc_decode, list_decode, encode, address_list_factory, node_classifier, \
+                                              sc_scheduler, list_scheduler
 
 
 class PolarCoding(object):

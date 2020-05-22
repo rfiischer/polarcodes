@@ -377,12 +377,12 @@ def list_decode(n, list_size, alphas, tasks, address_list):
     alpha_array[:, :2 ** n] = alphas
     beta_array = np.zeros((list_size, size), dtype=np.uint8)
 
-    metrics = [0]
+    metrics = [0.0]
 
     for task in tasks:
         if task[1] == 1:
 
-            next_metrics = []
+            next_metrics = np.zeros((2 * len(metrics), 3), dtype=np.float64)
 
             for idx, metric in enumerate(metrics):
                 alpha = alpha_array[idx, address_list[task[0], 0]]
@@ -390,9 +390,11 @@ def list_decode(n, list_size, alphas, tasks, address_list):
                 pm0 = phi(metric, alpha, 0)
                 pm1 = phi(metric, alpha, 1)
 
-                next_metrics.extend([[idx, 0, pm0], [idx, 1, pm1]])
+                next_metrics[2 * idx, :] = [idx, 0.0, pm0]
+                next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
 
-            next_metrics_sorted = [item for item in sorted(next_metrics, key=lambda item: item[2])]
+            metrics_order = np.argsort(next_metrics[:, 2])
+            next_metrics_sorted = next_metrics[metrics_order]
             num_final_paths = len(next_metrics_sorted) if len(next_metrics_sorted) <= list_size else list_size
             final_paths = next_metrics_sorted[:num_final_paths]
 
@@ -400,14 +402,14 @@ def list_decode(n, list_size, alphas, tasks, address_list):
             new_alpha_array = np.zeros((list_size, size), dtype=np.float64)
             new_beta_array = np.zeros((list_size, size), dtype=np.uint8)
             for idx, path in enumerate(final_paths):
-                old_idx = path[0]
-                value = path[1]
+                old_idx = int(path[0])
+                value = int(path[1])
                 metric = path[2]
 
                 new_alphas = alpha_array[old_idx, :]
                 new_alpha_array[idx, :] = new_alphas
 
-                new_betas = beta_array[old_idx, :]
+                new_betas = np.copy(beta_array[old_idx, :])
                 new_betas[address_list[task[0], 0]] = value
                 new_beta_array[idx, :] = new_betas
 

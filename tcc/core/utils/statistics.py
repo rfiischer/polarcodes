@@ -2,7 +2,6 @@ import numpy as np
 import datetime
 import os
 import logging
-from scipy.stats import bayes_mvs
 from queue import Empty
 
 
@@ -18,7 +17,7 @@ class Statistics:
         self.extension = parameters.results_file_extension
         self.results_file_path = ""
         self.overwrite_output = parameters.overwrite_output
-        self.bit_stats_header = '{} \t Length \t Conf. \t Errors'.format(parameters.snr_unit)
+        self.bit_stats_header = '{} \t Length \t Errors'.format(parameters.snr_unit)
         self.rate_stats_header = '{} \t Error rate'.format(parameters.snr_unit)
 
         self.samples = []
@@ -49,8 +48,7 @@ class Statistics:
         self.last_snr['val'] = value
         self.last_snr['data'] = dict()
         for cat in self.key_list:
-            self.last_snr['data'][cat] = {'counter': [], 'total': [], 'stats': {'mean': -1, 'conf': -1},
-                                          'any': False}
+            self.last_snr['data'][cat] = {'counter': [], 'total': [], 'any': False}
 
     def update_stats(self, *args):
         """
@@ -68,15 +66,6 @@ class Statistics:
         for key in self.key_list:
             current_snr = self.last_snr['data'][key]
             current_snr['length'] = len(current_snr['total'])
-            if current_snr['length'] > 2:
-                if not any(np.array(current_snr['counter']) - current_snr['counter'][0]):
-                    current_snr['stats']['mean'] = current_snr['counter'][0]
-                    current_snr['stats']['conf'] = 0
-
-                else:
-                    stats = bayes_mvs(current_snr['counter'])
-                    current_snr['stats']['mean'] = stats[0][0]
-                    current_snr['stats']['conf'] = (stats[0][1][1] - stats[0][1][0]) / stats[0][0]
 
             if any(current_snr['counter']):
                 current_snr['any'] = True
@@ -86,7 +75,6 @@ class Statistics:
             try:
                 args = queue.get(block=False)
                 self.update_stats(*args)
-                queue.task_done()
 
             except Empty:
                 break
@@ -108,8 +96,6 @@ class Statistics:
                                    fmt='%.4f', delimiter='', newline='\t')
                         np.savetxt(file, np.array([snr['data'][stats_name]['length']]).reshape((1, -1)),
                                    fmt='%d', delimiter='', newline='\t')
-                        np.savetxt(file, np.array([snr['data'][stats_name]['stats']['conf']]).reshape((1, -1)),
-                                   fmt='%.3e', delimiter='', newline='\t')
                         np.savetxt(file, np.array(snr['data'][stats_name]['counter']).reshape((1, -1)),
                                    fmt='%d', delimiter='\t')
 

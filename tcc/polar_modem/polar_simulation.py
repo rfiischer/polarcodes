@@ -7,6 +7,7 @@ Created on 25/03/2020 21:44
 
 import multiprocessing as mp
 import logging
+import numpy as np
 
 from tcc.core.simulation import Simulation
 from tcc.polar_modem.polar_worker import PolarWorker
@@ -30,24 +31,25 @@ class PolarSimulation(Simulation):
                                         ('fer', True)])
 
         # Get seeds
-        seeds = [parameters.seed + i for i in range(parameters.num_workers)]
+        rng = np.random.RandomState(parameters.seed)
+        seeds = [rng.randint(0, 2 ** 32, dtype=np.int64) for _ in range(parameters.num_workers)]
 
         # Workers
         self.num_workers = parameters.num_workers
         self.frame_pack_size = parameters.frame_pack_size
         self.job_queue = mp.JoinableQueue()
-        self.results_queue = mp.JoinableQueue()
+        self.results_queue = mp.Queue()
         self.workers = [PolarWorker(parameters, seed, self.results_queue, self.shutdown, self.job_queue)
                         for seed in seeds]
 
         # SNR Manager
         self.snr_config = SnrConfig({'counter_name': 'ber',
-                                     'counter_specs': {'min_relative_accuracy': parameters.min_bit_accuracy,
+                                     'counter_specs': {'min_event_counter': parameters.min_bit_events,
                                                        'max_counter': parameters.max_bit_counter,
                                                        'min_counter': parameters.min_bit_counter,
                                                        'target_stats': parameters.bit_target_stats}},
                                     {'counter_name': 'fer',
-                                     'counter_specs': {'min_relative_accuracy': parameters.min_frame_accuracy,
+                                     'counter_specs': {'min_event_counter': parameters.min_frame_events,
                                                        'max_counter': parameters.max_frame_counter,
                                                        'min_counter': parameters.min_frame_counter,
                                                        'target_stats': parameters.frame_target_stats}})

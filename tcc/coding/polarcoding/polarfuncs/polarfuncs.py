@@ -20,7 +20,7 @@ import numpy as np
 # pythran export betas(uint8[:], uint32[:, :], uint32)
 # pythran export encode(uint8[:], uint8)
 # pythran export sc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
-# pythra export list_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
+# pythran export list_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
 # This is a consequence of the linear memory addressing used with 32 bit addresses
@@ -399,24 +399,19 @@ def list_decode(n, list_size, alphas, tasks, address_list):
             final_paths = next_metrics_sorted[:num_final_paths]
 
             metrics = []
-            new_alpha_array = np.zeros((list_size, size), dtype=np.float64)
-            new_beta_array = np.zeros((list_size, size), dtype=np.uint8)
+            old_alpha_array = np.copy(alpha_array)
+            old_beta_array = np.copy(beta_array)
             for idx, path in enumerate(final_paths):
                 old_idx = int(path[0])
-                value = int(path[1])
+                value = np.uint8(path[1])
                 metric = path[2]
 
-                new_alphas = alpha_array[old_idx, :]
-                new_alpha_array[idx, :] = new_alphas
+                alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
 
-                new_betas = np.copy(beta_array[old_idx, :])
-                new_betas[address_list[task[0], 0]] = value
-                new_beta_array[idx, :] = new_betas
+                beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
+                beta_array[idx, int(address_list[task[0], 0])] = value
 
                 metrics.append(metric)
-
-            alpha_array = new_alpha_array
-            beta_array = new_beta_array
 
         elif task[1] == 2:
             for i in range(len(metrics)):

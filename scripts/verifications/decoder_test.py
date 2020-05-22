@@ -40,7 +40,7 @@ for K in range(1, 9):
         pc = PolarCoding(3, K, permutation, 'list-sc', 4)
         bits = np.unpackbits(np.array([i], dtype=np.uint8))[8 - K:]
         encoded = pc.encode(bits)
-        llr = [1.5 if value == 0 else -1.5 for value in encoded]
+        llr = np.array([1.5 if value == 0 else -1.5 for value in encoded])
         decoded = pc.decode(llr)
         if not np.all(decoded == bits):
             print(bits)

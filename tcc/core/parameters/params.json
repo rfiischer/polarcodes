@@ -154,9 +154,9 @@
       "param_text": "Polar code construction method"
     },
     "decoding_algorithm": {
-      "param_options": ["sc",
+      "param_options": ["ssc",
                         "list-sc"],
-      "default_value": "sc",
+      "default_value": "ssc",
       "param_text": "Polar code decoding algorithm"
     },
     "list_size": {

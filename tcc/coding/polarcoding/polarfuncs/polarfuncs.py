@@ -12,14 +12,14 @@ import numpy as np
 # pythran export fr(float64, float64, uint8)
 # pythran export phi(float64, float64, uint8)
 # pythran export address_list_factory(uint8)
-# pythran export node_classifier(uint8, uint32[:], uint32[:])
-# not able to export sc_scheduler(uint8, uint8[:])
+# pythran export ssc_node_classifier(uint8, uint32[:], uint32[:])
+# not able to export ssc_scheduler(uint8, uint8[:])
 # not able to export list_scheduler(uint8, uint8[:])
 # pythran export alpha_left(float64[:], uint32[:, :], uint32)
 # pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
 # pythran export betas(uint8[:], uint32[:, :], uint32)
 # pythran export encode(uint8[:], uint8)
-# pythran export sc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
+# pythran export ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 # pythran export list_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
@@ -105,7 +105,7 @@ def address_list_factory(n):
     return child_array_start_list
 
 
-def node_classifier(n, information, frozen):
+def ssc_node_classifier(n, information, frozen):
     """
     Classify each node. 0 means rate-0, 1 means rate-1 and 2 means neither.
 
@@ -143,7 +143,7 @@ def node_classifier(n, information, frozen):
     return rate_sheet
 
 
-def sc_scheduler(n, node_sheet):
+def ssc_scheduler(n, node_sheet):
     """
     Define the decoding steps for the sublinear SC decoder. Each tuple represents (node_address, task).
 
@@ -330,7 +330,7 @@ def encode(bits, n):
 
 
 # SC decoding function
-def sc_decode(n, alphas, tasks, address_list):
+def ssc_decode(n, alphas, tasks, address_list):
     """
     Perform the SC polar decoding.
     """

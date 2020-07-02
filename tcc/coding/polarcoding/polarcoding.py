@@ -8,8 +8,8 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import sc_decode, list_decode, encode, address_list_factory, node_classifier, \
-                                              sc_scheduler, list_scheduler
+from tcc.coding.polarcoding.polarfuncs import ssc_decode, list_decode, encode, address_list_factory, ssc_node_classifier, \
+                                              ssc_scheduler, list_scheduler
 
 
 class PolarCoding(object):
@@ -17,7 +17,7 @@ class PolarCoding(object):
     Implements polar encoding and decoding
     """
 
-    def __init__(self, n, k, rel_idx=None, decoding_type='sc', list_size=None):
+    def __init__(self, n, k, rel_idx=None, decoding_type='ssc', list_size=None):
         """
 
         :param n: Block size N = 2^n
@@ -108,15 +108,15 @@ class PolarCoding(object):
 
             self.N = obj.N
             self.n = np.uint8(obj.n)
-            self.node_sheet = node_classifier(self.n, obj.information, obj.frozen)
+            self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
             self.address_list = address_list_factory(self.n).astype(np.uint32)
             self.information = obj.information
             self.dec_bits = None
 
-            if obj.dec_type == 'sc':
-                self.tasks = sc_scheduler(self.n, self.node_sheet)
+            if obj.dec_type == 'ssc':
+                self.tasks = ssc_scheduler(self.n, self.node_sheet)
 
-                self.decoder = self.sc_dec
+                self.decoder = self.ssc_dec
 
             elif obj.dec_type == 'list-sc':
                 self.list_size = np.uint8(obj.list_size)
@@ -130,8 +130,8 @@ class PolarCoding(object):
         def __call__(self, llr):
             return self.decoder(llr)
 
-        def sc_dec(self, llr):
-            dec_bits = sc_decode(self.n, llr, self.tasks, self.address_list)
+        def ssc_dec(self, llr):
+            dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
         def list_dec(self, llr):

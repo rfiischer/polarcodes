@@ -155,6 +155,7 @@
     },
     "decoding_algorithm": {
       "param_options": ["ssc",
+                        "fast-ssc",
                         "list-sc"],
       "default_value": "ssc",
       "param_text": "Polar code decoding algorithm"

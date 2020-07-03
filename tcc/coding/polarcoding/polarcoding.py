@@ -8,8 +8,9 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import ssc_decode, list_decode, encode, address_list_factory, ssc_node_classifier, \
-                                              ssc_scheduler, list_scheduler
+from tcc.coding.polarcoding.polarfuncs import ssc_decode, fast_ssc_decode, list_decode, encode, address_list_factory, \
+                                              ssc_node_classifier, fast_ssc_node_classifier, \
+                                              ssc_scheduler, fast_ssc_scheduler, list_scheduler
 
 
 class PolarCoding(object):
@@ -90,10 +91,23 @@ class PolarCoding(object):
             self.N = obj.N
             self.n = obj.n
             self.information = obj.information
+            self.frozen = obj.frozen
+
+            self.enc = self.systematic
 
         def __call__(self, bits):
             """
             Perform polar encoding
+            :param bits: integer unidimensional ndarray of 0's and 1's
+            :return: b * Fn
+            """
+
+            return self.enc(bits)
+
+        def non_systematic(self, bits):
+            """
+            Perform non-systematic polar encoding
+
             :param bits: integer unidimensional ndarray of 0's and 1's
             :return: b * Fn
             """
@@ -103,22 +117,46 @@ class PolarCoding(object):
             bit_vector[self.information] = bits
             return encode(bit_vector, self.n)
 
+        def systematic(self, bits):
+            """
+            Perform systematic polar encoding
+
+            :param bits: integer unidimensional ndarray of 0's and 1's
+            :return: b * Fn
+            """
+
+            # TODO: pass these operations to inside 'encode'
+            bit_vector = np.zeros(self.N, dtype=np.uint8)
+            bit_vector[self.information] = bits
+            first_encoded = encode(bit_vector, self.n)
+
+            first_encoded[self.frozen] = 0
+
+            return encode(first_encoded, self.n)
+
     class Decode(object):
         def __init__(self, obj):
 
             self.N = obj.N
             self.n = np.uint8(obj.n)
-            self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
             self.address_list = address_list_factory(self.n).astype(np.uint32)
             self.information = obj.information
             self.dec_bits = None
 
             if obj.dec_type == 'ssc':
+                self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.tasks = ssc_scheduler(self.n, self.node_sheet)
 
                 self.decoder = self.ssc_dec
 
+            elif obj.dec_type == 'fast-ssc':
+                self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
+                self.tasks = fast_ssc_scheduler(self.n, self.node_sheet)
+
+                self.decoder = self.fast_ssc_dec
+
             elif obj.dec_type == 'list-sc':
+                self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.list_size = np.uint8(obj.list_size)
                 self.tasks = list_scheduler(self.n, self.node_sheet)
 
@@ -132,6 +170,10 @@ class PolarCoding(object):
 
         def ssc_dec(self, llr):
             dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
+            return dec_bits[self.information]
+
+        def fast_ssc_dec(self, llr):
+            dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
         def list_dec(self, llr):

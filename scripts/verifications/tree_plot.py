@@ -1,4 +1,5 @@
 """
+Plot the decoding tree with color-coded nodes identifying Rate-0, Rate-1, SPC, REP or other nodes.
 
 Created on 20/05/2020 19:03
 
@@ -11,10 +12,11 @@ import matplotlib.pyplot as plt
 
 
 # Setup
-n = 4
+n = 5
 K = 2 ** (n - 1)
 esn0 = 10
-pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0])
+decoding_type = 'fast-ssc'
+pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type)
 
 # Gather info
 nodes = pc.decode.node_sheet
@@ -30,5 +32,5 @@ for i in range(2 ** (n + 1) - 1):
 y = [2 ** node_data[i, 6] for i in range(2 ** (n + 1) - 1)]
 
 # Plot
-plt.scatter(x, y, c=nodes)
+plt.scatter(x, y, c=nodes, cmap='Accent')
 plt.show()

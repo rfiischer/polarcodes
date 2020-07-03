@@ -13,13 +13,16 @@ import numpy as np
 # pythran export phi(float64, float64, uint8)
 # pythran export address_list_factory(uint8)
 # pythran export ssc_node_classifier(uint8, uint32[:], uint32[:])
+# pythran export fast_ssc_node_classifier(uint8, uint32[:], uint32[:])
 # not able to export ssc_scheduler(uint8, uint8[:])
+# not able to export fast_ssc_scheduler(uint8, uint8[:])
 # not able to export list_scheduler(uint8, uint8[:])
 # pythran export alpha_left(float64[:], uint32[:, :], uint32)
 # pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
 # pythran export betas(uint8[:], uint32[:, :], uint32)
 # pythran export encode(uint8[:], uint8)
 # pythran export ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
+# pythran export fast_ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 # pythran export list_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
 
 # Maximum n for polar coding is 27, resulting on a block sized 134,217,728‬
@@ -127,6 +130,7 @@ def ssc_node_classifier(n, information, frozen):
             rate_sheet[i] = 0
 
         else:
+            # This case should never be reached
             rate_sheet[i] = 2
 
     for j in range(n):
@@ -143,9 +147,67 @@ def ssc_node_classifier(n, information, frozen):
     return rate_sheet
 
 
+def fast_ssc_node_classifier(n, information, frozen):
+    """
+    Classify each node.
+
+    0: rate-0
+    1: rate-1
+    2: REP
+    3: SPC
+    4: neither
+
+    :param n: tree depth
+    :param information: list containing information indexes
+    :param frozen: list containing frozen indexes
+    :return: linear array containing the node information
+    """
+    ilist = [i + 2 ** n - 1 for i in information]
+    flist = [f + 2 ** n - 1 for f in frozen]
+
+    rate_sheet = np.zeros(2 ** (n + 1) - 1, dtype=np.uint8)
+
+    for i in range(2 ** n - 1, 2 ** (n + 1) - 1):
+        if i in ilist:
+            rate_sheet[i] = 1
+
+        elif i in flist:
+            rate_sheet[i] = 0
+
+        else:
+            # This case should never be reached
+            rate_sheet[i] = 4
+
+    for j in range(n):
+        for i in range(2 ** (n - j - 1) - 1, 2 ** (n - j) - 1):
+            if rate_sheet[2 * i + 1] == 1 and rate_sheet[2 * i + 2] == 1:
+                rate_sheet[i] = 1
+
+            elif rate_sheet[2 * i + 1] == 0 and rate_sheet[2 * i + 2] == 0:
+                rate_sheet[i] = 0
+
+            elif rate_sheet[2 * i + 1] == 0 and rate_sheet[2 * i + 2] == 2:
+                rate_sheet[i] = 2
+
+            elif j == 0 and rate_sheet[2 * i + 1] == 0 and rate_sheet[2 * i + 2] == 1:
+                rate_sheet[i] = 2
+
+            elif j == 1 and rate_sheet[2 * i + 1] == 2 and rate_sheet[2 * i + 2] == 1:
+                rate_sheet[i] = 3
+
+            elif j > 1 and rate_sheet[2 * i + 1] == 3 and rate_sheet[2 * i + 2] == 1:
+                rate_sheet[i] = 3
+
+            else:
+                rate_sheet[i] = 4
+
+    return rate_sheet
+
+
 def ssc_scheduler(n, node_sheet):
     """
     Define the decoding steps for the sublinear SC decoder. Each tuple represents (node_address, task).
+    The schedule ends when the root node betas are obtainded.
 
     Tasks
         - 0: do nothing
@@ -155,21 +217,13 @@ def ssc_scheduler(n, node_sheet):
         - 4: compute alpha right
     """
 
-    # First column is the alpha flag, second column is the beta flag
+    # Flag that states whether the node is completely decoded or not
     node_flags = np.zeros(2 ** (n + 1) - 1, dtype=np.uint8)
 
     # Initialize rate-0 nodes
-    # Also count the number of rate-1 nodes that need to be get into
-    rate1 = 0
     for i in range(2 ** (n + 1) - 1):
-
-        parent = (i - 1) // 2
-
         if node_sheet[i] == 0:
             node_flags[i] = 1
-
-        if node_sheet[i] == 1 and node_sheet[parent] == 2:
-            rate1 += 1
 
     # Tasks
     tasks = []
@@ -183,7 +237,8 @@ def ssc_scheduler(n, node_sheet):
 
     else:
         nptr = 0
-        while rate1 > 0:
+        stop = False
+        while not stop:
 
             left_child = 2 * nptr + 1
             right_child = 2 * nptr + 2
@@ -193,13 +248,14 @@ def ssc_scheduler(n, node_sheet):
                 tasks.append([nptr, 1])
                 node_flags[nptr] = 1
                 nptr = parent
-                rate1 -= 1
 
             else:
                 if node_flags[left_child] == 1 and node_flags[right_child] == 1:
                     tasks.append([nptr, 2])
                     node_flags[nptr] = 1
                     nptr = parent
+                    if nptr < 0:
+                        stop = True
 
                 elif node_flags[left_child] == 0:
                     tasks.append([nptr, 3])
@@ -207,6 +263,79 @@ def ssc_scheduler(n, node_sheet):
 
                 else:
                     tasks.append([nptr, 4])
+                    nptr = right_child
+
+    return tasks
+
+
+def fast_ssc_scheduler(n, node_sheet):
+    """
+    Define the decoding steps for the Fast-SSC. Each tuple represents (node_address, task).
+    Suitable for systematic encoding, since the schedule ends with the betas at the root node.
+
+    Tasks
+        - 0: do nothing
+        - 1: compute betas from alphas at rate-1 node
+        - 2: compute betas from alphas at REP node
+        - 3: compute betas from alphas at SPC node
+        - 4: compute node betas from child betas
+        - 5: compute alphas left
+        - 6: compute alpha right
+    """
+
+    # Flag that states whether the node is completely decoded or not
+    node_flags = np.zeros(2 ** (n + 1) - 1, dtype=np.uint8)
+
+    # Initialize rate-0 nodes
+    for i in range(2 ** (n + 1) - 1):
+        if node_sheet[i] == 0:
+            node_flags[i] = 1
+
+    # Tasks
+    tasks = []
+
+    # Start task scheduling
+    if node_sheet[0] != 4:
+        tasks.append([0, node_sheet[0]])
+
+    else:
+        nptr = 0
+        stop = False
+        while not stop:
+
+            left_child = 2 * nptr + 1
+            right_child = 2 * nptr + 2
+            parent = (nptr - 1) // 2
+
+            if node_sheet[nptr] == 1:
+                tasks.append([nptr, 1])
+                node_flags[nptr] = 1
+                nptr = parent
+
+            elif node_sheet[nptr] == 2:
+                tasks.append([nptr, 2])
+                node_flags[nptr] = 1
+                nptr = parent
+
+            elif node_sheet[nptr] == 3:
+                tasks.append([nptr, 3])
+                node_flags[nptr] = 1
+                nptr = parent
+
+            else:
+                if node_flags[left_child] == 1 and node_flags[right_child] == 1:
+                    tasks.append([nptr, 4])
+                    node_flags[nptr] = 1
+                    nptr = parent
+                    if nptr < 0:
+                        stop = True
+
+                elif node_flags[left_child] == 0:
+                    tasks.append([nptr, 5])
+                    nptr = left_child
+
+                else:
+                    tasks.append([nptr, 6])
                     nptr = right_child
 
     return tasks
@@ -329,10 +458,12 @@ def encode(bits, n):
     return stage_input
 
 
-# SC decoding function
+# Decoding functions
 def ssc_decode(n, alphas, tasks, address_list):
     """
-    Perform the SC polar decoding.
+    Perform the SSC polar decoding.
+
+    Considers that systematic encoding is used.
     """
 
     size = (n + 1) * 2 ** n
@@ -345,17 +476,9 @@ def ssc_decode(n, alphas, tasks, address_list):
         if task[1] == 1:
             start_h = address_list[task[0], 0]
             size = address_list[task[0], 5]
-            level = address_list[task[0], 6]
-            start_child = address_list[task[0], 4]
             node_betas = np.array([0 if alpha > 0 else 1 for alpha in alpha_array[start_h: start_h + size]],
                                   dtype=np.uint8)
-            if size > 1:
-                leaf_betas = encode(node_betas, level)
 
-            else:
-                leaf_betas = node_betas
-
-            beta_array[start_child: start_child + size] = leaf_betas
             beta_array[start_h: start_h + size] = node_betas
 
         elif task[1] == 2:
@@ -367,7 +490,63 @@ def ssc_decode(n, alphas, tasks, address_list):
         elif task[1] == 4:
             alpha_right(alpha_array, beta_array, address_list, task[0])
 
-    return beta_array[n * 2 ** n:]
+    return beta_array[:2 ** n]
+
+
+def fast_ssc_decode(n, alphas, tasks, address_list):
+    """
+    Perform the Fast-SSC polar decoding.
+    Suitable for systematic encoding.
+    """
+
+    size = (n + 1) * 2 ** n
+    alpha_array = np.zeros(size, dtype=np.float64)
+    alpha_array[:2 ** n] = alphas
+    beta_array = np.zeros(size, dtype=np.uint8)
+
+    for task in tasks:
+
+        if task[1] == 1:
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+            node_betas = np.array([0 if alpha > 0 else 1 for alpha in alpha_array[start_h: start_h + size]],
+                                  dtype=np.uint8)
+
+            beta_array[start_h: start_h + size] = node_betas
+
+        elif task[1] == 2:
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+
+            decision_llr = np.sum(alpha_array[start_h: start_h + size])
+            decision_bit = 0 if decision_llr > 0 else 1
+
+            beta_array[start_h: start_h + size] = decision_bit * np.ones(size, dtype=np.uint8)
+
+        elif task[1] == 3:
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+            node_betas = np.array([0 if alpha > 0 else 1 for alpha in alpha_array[start_h: start_h + size]],
+                                  dtype=np.uint8)
+
+            parity = np.sum(node_betas) % 2
+
+            min_idx = np.argmin(np.abs(alpha_array[start_h: start_h + size]))
+
+            node_betas[min_idx] = (node_betas[min_idx] + parity) % 2
+
+            beta_array[start_h: start_h + size] = node_betas
+
+        elif task[1] == 4:
+            betas(beta_array, address_list, task[0])
+
+        elif task[1] == 5:
+            alpha_left(alpha_array, address_list, task[0])
+
+        elif task[1] == 6:
+            alpha_right(alpha_array, beta_array, address_list, task[0])
+
+    return beta_array[:2 ** n]
 
 
 def list_decode(n, list_size, alphas, tasks, address_list):

@@ -10,7 +10,7 @@ import logging
 
 # TODO: change this design pattern
 try:
-    from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import fl, fr, phi, address_list_factory, \
+    from tcc.coding.polarcoding.polarfuncs.polarfuncs_compiled import fl, fr, address_list_factory, \
                                                                       ssc_node_classifier, fast_ssc_node_classifier, \
                                                                       alpha_left, alpha_right, betas, encode, \
                                                                       ssc_decode, fast_ssc_decode, sscl_spc_decode

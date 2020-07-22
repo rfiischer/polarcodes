@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 n = 5
 K = 2 ** (n - 1)
 esn0 = 10
-decoding_type = 'fast-ssc'
-pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type)
+decoding_type = 'sscl-spc'
+pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type, list_size=8)
 
 # Gather info
 nodes = pc.decode.node_sheet

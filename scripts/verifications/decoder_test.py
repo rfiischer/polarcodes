@@ -20,8 +20,9 @@ from tcc.coding.polarcoding.construction import bhattacharyya
 # Polar coding configuration
 permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 n = 3
-decoding_type = 'fast-ssc'
-list_size = None
+decoding_type = 'sscl-spc'
+list_size = 8
+rng = np.random.RandomState(seed=124598)
 
 # Simple test
 errors = 0
@@ -36,7 +37,7 @@ for K in range(1, 9):
         if not np.all(decoded == bits):
             print(bits)
             print(decoded)
-            print('\n')
+            print('ERRORS!\n')
             errors += 1
         else:
             print('No errors.\n')
@@ -52,7 +53,7 @@ for n in range(1, 10):
 
     for i in range(reps):
         print(f'n: {n}, rep: {i}')
-        bits = np.random.randint(0, 2, K)
+        bits = rng.randint(0, 2, K)
         encoded = pc.encode(bits)
         llr = np.array([1.5 if value == 0 else -1.5 for value in encoded])
         decoded = pc.decode(llr)

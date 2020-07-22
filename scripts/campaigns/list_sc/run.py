@@ -17,5 +17,5 @@ if __name__ == "__main__":
                                                                                           str(list_size)),
                                                     'results_dir': '"results/{}/"'.format('bhattacharyya' +
                                                                                           str(list_size))},
-                                        'RUN': {'num_workers': 4,
-                                                'frame_pack_size': 4}})
+                                        'RUN': {'num_workers': 1,
+                                                'frame_pack_size': 1}})

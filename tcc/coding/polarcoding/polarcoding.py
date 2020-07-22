@@ -8,9 +8,9 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import ssc_decode, fast_ssc_decode, list_decode, encode, address_list_factory, \
-                                              ssc_node_classifier, fast_ssc_node_classifier, \
-                                              ssc_scheduler, fast_ssc_scheduler, list_scheduler
+from tcc.coding.polarcoding.polarfuncs import ssc_decode, fast_ssc_decode, sscl_spc_decode, encode, \
+                                              address_list_factory, ssc_node_classifier, fast_ssc_node_classifier, \
+                                              ssc_scheduler, fast_ssc_scheduler, sscl_spc_scheduler
 
 
 class PolarCoding(object):
@@ -155,12 +155,12 @@ class PolarCoding(object):
 
                 self.decoder = self.fast_ssc_dec
 
-            elif obj.dec_type == 'list-sc':
-                self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
+            elif obj.dec_type == 'sscl-spc':
+                self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.list_size = np.uint8(obj.list_size)
-                self.tasks = list_scheduler(self.n, self.node_sheet)
+                self.tasks = sscl_spc_scheduler(self.n, self.node_sheet)
 
-                self.decoder = self.list_dec
+                self.decoder = self.sscl_spc_dec
 
             else:
                 raise ValueError('Invalid decoding type: {}'.format(obj.dec_type))
@@ -176,6 +176,6 @@ class PolarCoding(object):
             dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
-        def list_dec(self, llr):
-            dec_bits = list_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+        def sscl_spc_dec(self, llr):
+            dec_bits = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
             return dec_bits[self.information]

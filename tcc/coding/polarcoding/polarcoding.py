@@ -177,5 +177,6 @@ class PolarCoding(object):
             return dec_bits[self.information]
 
         def sscl_spc_dec(self, llr):
-            dec_bits = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+            betas = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+            dec_bits = betas[0, :2 ** self.n]
             return dec_bits[self.information]

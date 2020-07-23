@@ -609,7 +609,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
     size = (n + 1) * 2 ** n
     alpha_array = np.zeros((list_size, size), dtype=np.float64)
-    alpha_array[:, :2 ** n] = alphas
+    alpha_array[0, :2 ** n] = alphas
     beta_array = np.zeros((list_size, size), dtype=np.uint8)
 
     metrics = [0.0]
@@ -777,6 +777,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             for i in range(len(metrics)):
                 alpha_right(alpha_array[i, :], beta_array[i, :], address_list, task[0])
 
-    decoded_bits = beta_array[0, :2 ** n]
+    # Outputing the decoded bits causes errors using the Pythran version
+    # decoded_bits = beta_array[0, :2 ** n]
 
-    return decoded_bits
+    return beta_array  # decoded_bits

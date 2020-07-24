@@ -9,12 +9,15 @@ Created on 17/02/2020 17:33
 import numpy as np
 
 from tcc.coding.polarcoding import PolarCoding
+from tcc.coding.polarcoding.construction import bhattacharyya
 
 n = 12
 k = 2048
+esn0 = 10
 frames = 1000
+list_size = 8
 decoding_type = 'fast-ssc'
-pc = PolarCoding(n, k, decoding_type=decoding_type)
+pc = PolarCoding(n, k, bhattacharyya(n, esn0)[0], decoding_type=decoding_type, list_size=list_size)
 
 for frame in range(0, frames):
     bits = np.random.randint(0, 2, k, dtype=np.uint8)

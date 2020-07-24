@@ -13,9 +13,9 @@ if __name__ == "__main__":
     for list_size in list_sizes:
         main("parameters/batch_0.ini", {'POLAR': {'construction_method': '"{}"'.format('bhattacharyya'),
                                                   'list_size': list_size},
-                                        'GENERAL': {'log_file': '"log/{}_log.log"'.format('bhattacharyya' +
+                                        'GENERAL': {'log_file': '"log/{}_log.log"'.format('l' +
                                                                                           str(list_size)),
-                                                    'results_dir': '"results/{}/"'.format('bhattacharyya' +
+                                                    'results_dir': '"results/{}/"'.format('l' +
                                                                                           str(list_size))},
-                                        'RUN': {'num_workers': 1,
-                                                'frame_pack_size': 1}})
+                                        'RUN': {'num_workers': 4,
+                                                'frame_pack_size': 4}})

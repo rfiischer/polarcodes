@@ -30,7 +30,7 @@ for subdir in glob.glob('results/**/'):
 
 # QPSK plot - EbN0
 thickness = [2] * len(methods)
-colours = ['r', 'g', 'b', 'm', 'y', 'k']
+colours = []
 plot_ber(plot_list,
          tuple(methods),
          "Polar",

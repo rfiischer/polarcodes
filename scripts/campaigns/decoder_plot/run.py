@@ -8,7 +8,7 @@ Created on 10/03/2020 20:58
 
 from tcc.main import main
 
-decoders = ['ssc', 'fast-ssc']
+decoders = ['sscl-spc', 'ssc', 'fast-ssc']
 
 if __name__ == '__main__':
     for decoder in decoders:

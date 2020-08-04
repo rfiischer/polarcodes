@@ -21,7 +21,8 @@ from tcc.coding.polarcoding.construction import bhattacharyya
 permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 n = 3
 decoding_type = 'sscl-spc'
-list_size = 8
+encoding_mode = 'systematic'
+list_size = 1
 rng = np.random.RandomState(seed=124598)
 
 # Simple test
@@ -29,7 +30,7 @@ errors = 0
 for K in range(1, 9):
     for i in range(0, 2 ** K):
         print(f'K: {K}, bits: {i}')
-        pc = PolarCoding(3, K, permutation, decoding_type, list_size)
+        pc = PolarCoding(3, K, permutation, decoding_type, list_size, encoding_mode)
         bits = np.unpackbits(np.array([i], dtype=np.uint8))[8 - K:]
         encoded = pc.encode(bits)
         llr = np.array([1.5 if value == 0 else -1.5 for value in encoded])
@@ -49,7 +50,7 @@ reps = 1000
 esn0 = 10
 for n in range(1, 10):
     K = 2 ** (n - 1)
-    pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type, list_size)
+    pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type, list_size, encoding_mode)
 
     for i in range(reps):
         print(f'n: {n}, rep: {i}')

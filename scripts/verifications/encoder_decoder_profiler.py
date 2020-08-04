@@ -17,7 +17,9 @@ esn0 = 10
 frames = 1000
 list_size = 8
 decoding_type = 'fast-ssc'
-pc = PolarCoding(n, k, bhattacharyya(n, esn0)[0], decoding_type=decoding_type, list_size=list_size)
+encoding_mode = 'systematic'
+pc = PolarCoding(n, k, bhattacharyya(n, esn0)[0], decoding_algorithm=decoding_type, list_size=list_size,
+                 encoding_mode=encoding_mode)
 
 for frame in range(0, frames):
     bits = np.random.randint(0, 2, k, dtype=np.uint8)

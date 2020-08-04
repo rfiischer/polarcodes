@@ -18,7 +18,7 @@ class PolarCoding(object):
     Implements polar encoding and decoding
     """
 
-    def __init__(self, n, k, rel_idx=None, decoding_type='ssc', list_size=None):
+    def __init__(self, n, k, rel_idx=None, decoding_algorithm='ssc', list_size=None, encoding_mode='systematic'):
         """
 
         :param n: Block size N = 2^n
@@ -34,8 +34,9 @@ class PolarCoding(object):
 
         self.Fn = self._generate_g()
 
-        self.dec_type = decoding_type
+        self.dec_type = decoding_algorithm
         self.list_size = list_size
+        self.enc_mode = encoding_mode
 
         if rel_idx is not None:
             if not np.array_equal(np.sort(rel_idx), np.arange(0, self.N)):
@@ -92,8 +93,16 @@ class PolarCoding(object):
             self.n = obj.n
             self.information = obj.information
             self.frozen = obj.frozen
+            self.enc_mode = obj.enc_mode
 
-            self.enc = self.systematic
+            if self.enc_mode == "systematic":
+                self.enc = self.systematic
+
+            elif self.enc_mode == "non-systematic":
+                self.enc = self.non_systematic
+
+            else:
+                raise ValueError("The encoding mode should be 'systematic' or 'non-systematic'")
 
         def __call__(self, bits):
             """
@@ -137,30 +146,41 @@ class PolarCoding(object):
     class Decode(object):
         def __init__(self, obj):
 
-            self.N = obj.N
             self.n = np.uint8(obj.n)
             self.address_list = address_list_factory(self.n).astype(np.uint32)
             self.information = obj.information
-            self.dec_bits = None
+            self.enc_mode = obj.enc_mode
 
             if obj.dec_type == 'ssc':
                 self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.tasks = ssc_scheduler(self.n, self.node_sheet)
 
-                self.decoder = self.ssc_dec
+                if self.enc_mode == 'systematic':
+                    self.decoder = self.ssc_dec_sys
+
+                else:
+                    self.decoder = self.ssc_dec
 
             elif obj.dec_type == 'fast-ssc':
                 self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.tasks = fast_ssc_scheduler(self.n, self.node_sheet)
 
-                self.decoder = self.fast_ssc_dec
+                if self.enc_mode == 'systematic':
+                    self.decoder = self.fast_ssc_dec_sys
+
+                else:
+                    self.decoder = self.fast_ssc_dec
 
             elif obj.dec_type == 'sscl-spc':
                 self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
                 self.list_size = np.uint8(obj.list_size)
                 self.tasks = sscl_spc_scheduler(self.n, self.node_sheet)
 
-                self.decoder = self.sscl_spc_dec
+                if self.enc_mode == 'systematic':
+                    self.decoder = self.sscl_spc_dec_sys
+
+                else:
+                    self.decoder = self.sscl_spc_dec
 
             else:
                 raise ValueError('Invalid decoding type: {}'.format(obj.dec_type))
@@ -168,15 +188,31 @@ class PolarCoding(object):
         def __call__(self, llr):
             return self.decoder(llr)
 
+        def ssc_dec_sys(self, llr):
+            dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
+            return dec_bits[self.information]
+
+        def fast_ssc_dec_sys(self, llr):
+            dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
+            return dec_bits[self.information]
+
+        def sscl_spc_dec_sys(self, llr):
+            betas = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+            dec_bits = betas[0, :2 ** self.n]
+            return dec_bits[self.information]
+
         def ssc_dec(self, llr):
             dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = encode(dec_bits, self.n)
             return dec_bits[self.information]
 
         def fast_ssc_dec(self, llr):
             dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = encode(dec_bits, self.n)
             return dec_bits[self.information]
 
         def sscl_spc_dec(self, llr):
             betas = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
             dec_bits = betas[0, :2 ** self.n]
+            dec_bits = encode(dec_bits, self.n)
             return dec_bits[self.information]

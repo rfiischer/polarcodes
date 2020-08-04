@@ -165,6 +165,12 @@
       "default_value": 4,
       "param_text": "List decoding size"
     },
+    "encoding_mode": {
+      "param_options": ["systematic",
+                        "non-systematic"],
+      "default_value": "systematic",
+      "param_text": "Polar code encoding mode"
+    },
     "base_design_snr": {
       "param_options": null,
       "default_value": 0,

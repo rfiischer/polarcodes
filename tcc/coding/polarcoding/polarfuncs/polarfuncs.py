@@ -620,10 +620,10 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
             start_h = address_list[task[0], 0]
             size = address_list[task[0], 5]
-            num_final_paths = min(2 * num_paths, list_size)
 
             for i in range(size):
 
+                num_final_paths = min(2 * num_paths, list_size)
                 next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
 
                 for idx in range(num_paths):
@@ -659,8 +659,8 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
             start_h = address_list[task[0], 0]
             size = address_list[task[0], 5]
-            num_final_paths = min(2 * num_paths, list_size)
 
+            num_final_paths = min(2 * num_paths, list_size)
             next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
 
             for idx in range(num_paths):
@@ -696,7 +696,6 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
             start_h = address_list[task[0], 0]
             size = address_list[task[0], 5]
-            num_final_paths = min(2 * num_paths, list_size)
 
             node_alphas = alpha_array[:, start_h: start_h + size]
 
@@ -712,6 +711,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
             for i in range(size - 1):
 
+                num_final_paths = min(2 * num_paths, list_size)
                 next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
 
                 for idx in range(num_paths):
@@ -757,28 +757,28 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
                 num_paths = num_final_paths
 
-            for idx, parity in enumerate(acc_parity[:num_final_paths]):
+            for idx, parity in enumerate(acc_parity[:num_paths]):
                 beta_array[idx, int(start_h) + idx_min[idx]] = parity % 2
 
         elif task[1] == 4:
 
-            start_h = int(address_list[task[0], 0])
-            size = int(address_list[task[0], 5])
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
 
-            for idx in range(len(metrics)):
+            for idx in range(num_paths):
                 alphas = alpha_array[idx, start_h:start_h + size]
                 metrics[idx] += 1 / 2 * np.sum(np.abs(alphas) - alphas)
 
         elif task[1] == 5:
-            for i in range(len(metrics)):
+            for i in range(num_paths):
                 betas(beta_array[i, :], address_list, task[0])
 
         elif task[1] == 6:
-            for i in range(len(metrics)):
+            for i in range(num_paths):
                 alpha_left(alpha_array[i, :], address_list, task[0])
 
         elif task[1] == 7:
-            for i in range(len(metrics)):
+            for i in range(num_paths):
                 alpha_right(alpha_array[i, :], beta_array[i, :], address_list, task[0])
 
     # Outputting the whole array enables the use of CRC list decoding

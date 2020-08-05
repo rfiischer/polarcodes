@@ -22,7 +22,7 @@ permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 n = 3
 decoding_type = 'sscl-spc'
 encoding_mode = 'systematic'
-list_size = 1
+list_size = 8
 rng = np.random.RandomState(seed=124598)
 
 # Simple test

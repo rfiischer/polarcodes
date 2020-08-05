@@ -612,20 +612,23 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
     alpha_array[0, :2 ** n] = alphas
     beta_array = np.zeros((list_size, size), dtype=np.uint8)
 
-    metrics = [0.0]
+    metrics = np.zeros(list_size, dtype=np.float64)
+    num_paths = 1
 
     for task in tasks:
         if task[1] == 1:
 
-            start_h = int(address_list[task[0], 0])
-            size = int(address_list[task[0], 5])
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+            num_final_paths = min(2 * num_paths, list_size)
 
             for i in range(size):
 
-                next_metrics = np.zeros((2 * len(metrics), 3), dtype=np.float64)
+                next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
 
-                for idx, metric in enumerate(metrics):
+                for idx in range(num_paths):
                     alpha = alpha_array[idx, start_h + i]
+                    metric = metrics[idx]
 
                     pm0 = metric + 1 / 2 * (abs(alpha) - alpha)
                     pm1 = metric + 1 / 2 * (abs(alpha) + alpha)
@@ -633,12 +636,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     next_metrics[2 * idx, :] = [idx, 0.0, pm0]
                     next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
 
-                metrics_order = np.argsort(next_metrics[:, 2])
-                next_metrics_sorted = next_metrics[metrics_order]
-                num_final_paths = min(len(next_metrics_sorted), list_size)
-                final_paths = next_metrics_sorted[:num_final_paths]
+                metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+                final_paths = next_metrics[metrics_order]
 
-                metrics = []
                 old_alpha_array = np.copy(alpha_array)
                 old_beta_array = np.copy(beta_array)
                 for idx, path in enumerate(final_paths):
@@ -649,19 +649,23 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
 
                     beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
-                    beta_array[idx, start_h + i] = value
+                    beta_array[idx, int(start_h) + i] = value
 
-                    metrics.append(metric)
+                    metrics[idx] = metric
+
+                num_paths = num_final_paths
 
         elif task[1] == 2:
 
-            start_h = int(address_list[task[0], 0])
-            size = int(address_list[task[0], 5])
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+            num_final_paths = min(2 * num_paths, list_size)
 
-            next_metrics = np.zeros((2 * len(metrics), 3), dtype=np.float64)
+            next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
 
-            for idx, metric in enumerate(metrics):
+            for idx in range(num_paths):
                 alphas = alpha_array[idx, start_h:start_h + size]
+                metric = metrics[idx]
 
                 pm0 = metric + 1 / 2 * np.sum(np.abs(alphas) - alphas)
                 pm1 = metric + 1 / 2 * np.sum(np.abs(alphas) + alphas)
@@ -669,12 +673,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                 next_metrics[2 * idx, :] = [idx, 0.0, pm0]
                 next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
 
-            metrics_order = np.argsort(next_metrics[:, 2])
-            next_metrics_sorted = next_metrics[metrics_order]
-            num_final_paths = min(len(next_metrics_sorted), list_size)
-            final_paths = next_metrics_sorted[:num_final_paths]
+            metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+            final_paths = next_metrics[metrics_order]
 
-            metrics = []
             old_alpha_array = np.copy(alpha_array)
             old_beta_array = np.copy(beta_array)
             for idx, path in enumerate(final_paths):
@@ -687,12 +688,15 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                 beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
                 beta_array[idx, start_h:start_h + size] = value * np.ones(size, dtype=np.uint8)
 
-                metrics.append(metric)
+                metrics[idx] = metric
+
+            num_paths = num_final_paths
 
         elif task[1] == 3:
 
-            start_h = int(address_list[task[0], 0])
-            size = int(address_list[task[0], 5])
+            start_h = address_list[task[0], 0]
+            size = address_list[task[0], 5]
+            num_final_paths = min(2 * num_paths, list_size)
 
             node_alphas = alpha_array[:, start_h: start_h + size]
 
@@ -703,14 +707,14 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             min_alphas = np.min(np.abs(node_alphas), axis=-1)
             acc_parity = np.zeros(idx_min.shape, dtype=np.uint8)
 
-            for idx in range(len(metrics)):
+            for idx in range(num_paths):
                 metrics[idx] = metrics[idx] + min_alphas[idx] if parity[idx] else metrics[idx]
 
             for i in range(size - 1):
 
-                next_metrics = np.zeros((2 * len(metrics), 4), dtype=np.float64)
+                next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
 
-                for idx, metric in enumerate(metrics):
+                for idx in range(num_paths):
                     if idx_min[idx] <= i:
                         i_bit = i + 1
 
@@ -718,6 +722,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                         i_bit = i
 
                     alpha = alpha_array[idx, start_h + i_bit]
+                    metric = metrics[idx]
 
                     pm0 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
                         if alpha < 0 else metric
@@ -727,12 +732,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     next_metrics[2 * idx, :] = [idx, 0.0, pm0, i_bit]
                     next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1, i_bit]
 
-                metrics_order = np.argsort(next_metrics[:, 2])
-                next_metrics_sorted = next_metrics[metrics_order]
-                num_final_paths = min(len(next_metrics_sorted), list_size)
-                final_paths = next_metrics_sorted[:num_final_paths]
+                metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+                final_paths = next_metrics[metrics_order]
 
-                metrics = []
                 old_alpha_array = np.copy(alpha_array)
                 old_beta_array = np.copy(beta_array)
                 for idx, path in enumerate(final_paths):
@@ -749,12 +751,14 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
 
                     beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
-                    beta_array[idx, start_h + i_bit] = value
+                    beta_array[idx, int(start_h) + i_bit] = value
 
-                    metrics.append(metric)
+                    metrics[idx] = metric
+
+                num_paths = num_final_paths
 
             for idx, parity in enumerate(acc_parity[:num_final_paths]):
-                beta_array[idx, start_h + idx_min[idx]] = parity % 2
+                beta_array[idx, int(start_h) + idx_min[idx]] = parity % 2
 
         elif task[1] == 4:
 
@@ -777,7 +781,5 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             for i in range(len(metrics)):
                 alpha_right(alpha_array[i, :], beta_array[i, :], address_list, task[0])
 
-    # Outputing the decoded bits causes errors using the Pythran version
-    # decoded_bits = beta_array[0, :2 ** n]
-
-    return beta_array  # decoded_bits
+    # Outputting the whole array enables the use of CRC list decoding
+    return beta_array

@@ -14,6 +14,14 @@ if __name__ == '__main__':
     for decoder in decoders:
         main("parameters/batch_0.ini",
              {'POLAR': {'construction_method': '"{}"'.format('bhattacharyya'),
-                        'decoding_algorithm': '"{}"'.format(decoder)},
+                        'decoding_algorithm': '"{}"'.format(decoder),
+                        'encoding_mode': '"systematic"'},
+              'GENERAL': {'log_file': '"log/{}_log.log"'.format(decoder + '_sys'),
+                          'results_dir': '"results/{}/"'.format(decoder + '_sys')}})
+
+        main("parameters/batch_0.ini",
+             {'POLAR': {'construction_method': '"{}"'.format('bhattacharyya'),
+                        'decoding_algorithm': '"{}"'.format(decoder),
+                        'encoding_mode': '"non-systematic"'},
               'GENERAL': {'log_file': '"log/{}_log.log"'.format(decoder),
                           'results_dir': '"results/{}/"'.format(decoder)}})

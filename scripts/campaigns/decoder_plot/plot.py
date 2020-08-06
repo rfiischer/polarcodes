@@ -8,29 +8,10 @@ Created on 17/03/2020 10:17
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import erfc
 
 import glob
 
-
-def plot_ber(graphs, legends, title, styl_arr, width, xlabel=r'$E_b/N_0$ (dB)', ylabel='BER', ylim=None, xlim=None):
-    fig, ax = plt.subplots()
-    for i, graph in enumerate(graphs):
-        ax.semilogy(graph[0], graph[1], styl_arr[i], linewidth=width[i])
-
-    ax.grid(which='both')
-    ax.legend(legends)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(r"{} for ".format(ylabel) + title)
-
-    if ylim is not None:
-        ax.set_ylim(ylim)
-
-    if xlim is not None:
-        ax.set_xlim(xlim)
-
-    fig.tight_layout()
+from tcc.core.utils.plotting import plot_ber
 
 
 # Change plot font
@@ -53,7 +34,7 @@ for subdir in glob.glob('results/**/'):
 
 # QPSK plot - EbN0
 thickness = [2] * len(methods)
-colours = ['r', 'g', 'b', 'm', 'y']
+colours = []
 plot_ber(plot_list,
          tuple(methods),
          "Polar",

@@ -646,9 +646,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     value = np.uint8(path[1])
                     metric = path[2]
 
-                    alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
+                    alpha_array[idx, :] = old_alpha_array[old_idx, :]
 
-                    beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
+                    beta_array[idx, :] = old_beta_array[old_idx, :]
                     beta_array[idx, int(start_h) + i] = value
 
                     metrics[idx] = metric
@@ -683,9 +683,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                 value = np.uint8(path[1])
                 metric = path[2]
 
-                alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
+                alpha_array[idx, :] = old_alpha_array[old_idx, :]
 
-                beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
+                beta_array[idx, :] = old_beta_array[old_idx, :]
                 beta_array[idx, start_h:start_h + size] = value * np.ones(size, dtype=np.uint8)
 
                 metrics[idx] = metric
@@ -748,9 +748,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     min_alphas[idx] = min_alphas[old_idx]
                     acc_parity[idx] = acc_parity[old_idx] + value
 
-                    alpha_array[idx, :] = np.copy(old_alpha_array[old_idx, :])
+                    alpha_array[idx, :] = old_alpha_array[old_idx, :]
 
-                    beta_array[idx, :] = np.copy(old_beta_array[old_idx, :])
+                    beta_array[idx, :] = old_beta_array[old_idx, :]
                     beta_array[idx, int(start_h) + i_bit] = value
 
                     metrics[idx] = metric

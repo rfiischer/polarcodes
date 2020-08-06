@@ -15,8 +15,8 @@ n = 12
 k = 2048
 esn0 = 10
 frames = 1000
-list_size = 8
-decoding_type = 'fast-ssc'
+list_size = 1
+decoding_type = 'sscl-spc'
 encoding_mode = 'systematic'
 pc = PolarCoding(n, k, bhattacharyya(n, esn0)[0], decoding_algorithm=decoding_type, list_size=list_size,
                  encoding_mode=encoding_mode)

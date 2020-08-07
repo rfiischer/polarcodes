@@ -41,6 +41,11 @@ import numpy as np
 # pythran export fast_ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 # pythran export sscl_spc_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
 
+# pythran export rate_1(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
+# pythran export rep(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
+# pythran export spc(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
+# pythran export rate_0(uint8, float64[:, :], float64[:], uint32, uint32[:, :])
+
 
 # Base functions
 def fl(a, b):
@@ -783,3 +788,164 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
     # Outputting the whole array enables the use of CRC list decoding
     return beta_array
+
+
+def rate_1(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
+
+    start_h = address_list[address, 0]
+    size = address_list[address, 5]
+
+    for i in range(size):
+
+        num_final_paths = min(2 * num_paths, list_size)
+        next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
+
+        for idx in range(num_paths):
+            alpha = alpha_array[idx, start_h + i]
+            metric = metrics[idx]
+
+            pm0 = metric + 1 / 2 * (abs(alpha) - alpha)
+            pm1 = metric + 1 / 2 * (abs(alpha) + alpha)
+
+            next_metrics[2 * idx, :] = [idx, 0.0, pm0]
+            next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
+
+        metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+        final_paths = next_metrics[metrics_order]
+
+        old_alpha_array = np.copy(alpha_array)
+        old_beta_array = np.copy(beta_array)
+        for idx, path in enumerate(final_paths):
+            old_idx = int(path[0])
+            value = np.uint8(path[1])
+            metric = path[2]
+
+            alpha_array[idx, :] = old_alpha_array[old_idx, :]
+
+            beta_array[idx, :] = old_beta_array[old_idx, :]
+            beta_array[idx, int(start_h) + i] = value
+
+            metrics[idx] = metric
+
+        num_paths = num_final_paths
+
+    return num_paths
+
+
+def rep(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
+    start_h = address_list[address, 0]
+    size = address_list[address, 5]
+
+    num_final_paths = min(2 * num_paths, list_size)
+    next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
+
+    for idx in range(num_paths):
+        alphas = alpha_array[idx, start_h:start_h + size]
+        metric = metrics[idx]
+
+        pm0 = metric + 1 / 2 * np.sum(np.abs(alphas) - alphas)
+        pm1 = metric + 1 / 2 * np.sum(np.abs(alphas) + alphas)
+
+        next_metrics[2 * idx, :] = [idx, 0.0, pm0]
+        next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
+
+    metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+    final_paths = next_metrics[metrics_order]
+
+    old_alpha_array = np.copy(alpha_array)
+    old_beta_array = np.copy(beta_array)
+    for idx, path in enumerate(final_paths):
+        old_idx = int(path[0])
+        value = np.uint8(path[1])
+        metric = path[2]
+
+        alpha_array[idx, :] = old_alpha_array[old_idx, :]
+
+        beta_array[idx, :] = old_beta_array[old_idx, :]
+        beta_array[idx, start_h:start_h + size] = value * np.ones(size, dtype=np.uint8)
+
+        metrics[idx] = metric
+
+    num_paths = num_final_paths
+
+    return num_paths
+
+
+def spc(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
+
+    start_h = address_list[address, 0]
+    size = address_list[address, 5]
+
+    node_alphas = alpha_array[:, start_h: start_h + size]
+
+    idx_min = np.argmin(np.abs(node_alphas), axis=-1).flatten()
+    parity_array = np.ones(node_alphas.shape, dtype=np.uint8)
+    parity_array[node_alphas >= 0] = 0
+    parity = np.sum(parity_array, axis=-1) % 2
+    min_alphas = np.min(np.abs(node_alphas), axis=-1)
+    acc_parity = np.zeros(idx_min.shape, dtype=np.uint8)
+
+    for idx in range(num_paths):
+        metrics[idx] = metrics[idx] + min_alphas[idx] if parity[idx] else metrics[idx]
+
+    for i in range(size - 1):
+
+        num_final_paths = min(2 * num_paths, list_size)
+        next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
+
+        for idx in range(num_paths):
+            if idx_min[idx] <= i:
+                i_bit = i + 1
+
+            else:
+                i_bit = i
+
+            alpha = alpha_array[idx, start_h + i_bit]
+            metric = metrics[idx]
+
+            pm0 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
+                if alpha < 0 else metric
+            pm1 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
+                if alpha >= 0 else metric
+
+            next_metrics[2 * idx, :] = [idx, 0.0, pm0, i_bit]
+            next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1, i_bit]
+
+        metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+        final_paths = next_metrics[metrics_order]
+
+        old_alpha_array = np.copy(alpha_array)
+        old_beta_array = np.copy(beta_array)
+        for idx, path in enumerate(final_paths):
+            old_idx = int(path[0])
+            value = np.uint8(path[1])
+            metric = path[2]
+            i_bit = int(path[3])
+
+            idx_min[idx] = idx_min[old_idx]
+            parity[idx] = parity[old_idx]
+            min_alphas[idx] = min_alphas[old_idx]
+            acc_parity[idx] = acc_parity[old_idx] + value
+
+            alpha_array[idx, :] = old_alpha_array[old_idx, :]
+
+            beta_array[idx, :] = old_beta_array[old_idx, :]
+            beta_array[idx, int(start_h) + i_bit] = value
+
+            metrics[idx] = metric
+
+        num_paths = num_final_paths
+
+    for idx, parity in enumerate(acc_parity[:num_paths]):
+        beta_array[idx, int(start_h) + idx_min[idx]] = parity % 2
+
+    return num_paths
+
+
+def rate_0(num_paths, alpha_array, metrics, address, address_list):
+    start_h = address_list[address, 0]
+    size = address_list[address, 5]
+
+    for idx in range(num_paths):
+        alphas = alpha_array[idx, start_h:start_h + size]
+        metrics[idx] += 1 / 2 * np.sum(np.abs(alphas) - alphas)

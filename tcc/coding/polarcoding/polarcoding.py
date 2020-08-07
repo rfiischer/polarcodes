@@ -8,17 +8,14 @@ Created on 12/02/2020 11:25
 
 import numpy as np
 
-from tcc.coding.polarcoding.polarfuncs import ssc_decode, fast_ssc_decode, sscl_spc_decode, encode, \
-                                              address_list_factory, ssc_node_classifier, fast_ssc_node_classifier, \
-                                              ssc_scheduler, fast_ssc_scheduler, sscl_spc_scheduler
-
 
 class PolarCoding(object):
     """
     Implements polar encoding and decoding
     """
 
-    def __init__(self, n, k, rel_idx=None, decoding_algorithm='ssc', list_size=None, encoding_mode='systematic'):
+    def __init__(self, n, k, rel_idx=None, decoding_algorithm='ssc', list_size=None, encoding_mode='systematic',
+                 implementation_type='pythran'):
         """
 
         :param n: Block size N = 2^n
@@ -37,6 +34,7 @@ class PolarCoding(object):
         self.dec_type = decoding_algorithm
         self.list_size = list_size
         self.enc_mode = encoding_mode
+        self.imp_type = implementation_type
 
         if rel_idx is not None:
             if not np.array_equal(np.sort(rel_idx), np.arange(0, self.N)):
@@ -93,16 +91,32 @@ class PolarCoding(object):
             self.n = obj.n
             self.information = obj.information
             self.frozen = obj.frozen
-            self.enc_mode = obj.enc_mode
 
-            if self.enc_mode == "systematic":
+            if obj.enc_mode == "systematic":
                 self.enc = self.systematic
 
-            elif self.enc_mode == "non-systematic":
+            elif obj.enc_mode == "non-systematic":
                 self.enc = self.non_systematic
 
             else:
                 raise ValueError("The encoding mode should be 'systematic' or 'non-systematic'")
+
+            if obj.imp_type == 'python':
+                from .polarfuncs.polarfuncs import encode
+
+                self.encode = encode
+
+            elif obj.imp_type == 'pythran' or obj.imp_type == 'hybrid':
+                try:
+                    from .polarfuncs.polarfuncs_compiled import encode
+
+                    self.encode = encode
+
+                except ImportError:
+                    raise ImportError("Was not able to load the compiled encoder.")
+
+            else:
+                raise ValueError("Invalid implementation type: {}".format(obj.imp_type))
 
         def __call__(self, bits):
             """
@@ -124,7 +138,7 @@ class PolarCoding(object):
             # TODO: pass these operations to inside 'encode'
             bit_vector = np.zeros(self.N, dtype=np.uint8)
             bit_vector[self.information] = bits
-            return encode(bit_vector, self.n)
+            return self.encode(bit_vector, self.n)
 
         def systematic(self, bits):
             """
@@ -137,14 +151,75 @@ class PolarCoding(object):
             # TODO: pass these operations to inside 'encode'
             bit_vector = np.zeros(self.N, dtype=np.uint8)
             bit_vector[self.information] = bits
-            first_encoded = encode(bit_vector, self.n)
+            first_encoded = self.encode(bit_vector, self.n)
 
             first_encoded[self.frozen] = 0
 
-            return encode(first_encoded, self.n)
+            return self.encode(first_encoded, self.n)
 
     class Decode(object):
         def __init__(self, obj):
+
+            from .polarfuncs.polarfuncs import fast_ssc_scheduler, sscl_spc_scheduler, ssc_scheduler
+
+            if obj.imp_type == 'python':
+                from .polarfuncs.polarfuncs import (
+                    address_list_factory,
+                    ssc_node_classifier,
+                    fast_ssc_node_classifier,
+                    encode,
+                    ssc_decode,
+                    fast_ssc_decode,
+                    sscl_spc_decode
+                )
+
+                self.encode = encode
+                self.ssc_decode = ssc_decode
+                self.fast_ssc_decode = fast_ssc_decode
+                self.sscl_spc_decode = sscl_spc_decode
+
+            elif obj.imp_type == 'pythran':
+                try:
+                    from .polarfuncs.polarfuncs_compiled import (
+                        address_list_factory,
+                        ssc_node_classifier,
+                        fast_ssc_node_classifier,
+                        encode,
+                        ssc_decode,
+                        fast_ssc_decode,
+                        sscl_spc_decode
+                    )
+
+                    self.encode = encode
+                    self.ssc_decode = ssc_decode
+                    self.fast_ssc_decode = fast_ssc_decode
+                    self.sscl_spc_decode = sscl_spc_decode
+
+                except ImportError:
+                    raise ImportError("Was not able to load the compiled encoder.")
+
+            elif obj.imp_type == 'hybrid':
+                try:
+                    from .polarfuncs.polarfuncs_compiled import (
+                        address_list_factory,
+                        ssc_node_classifier,
+                        fast_ssc_node_classifier,
+                        encode,
+                        ssc_decode,
+                        fast_ssc_decode,
+                        sscl_spc_decode_hybrid
+                    )
+
+                    self.encode = encode
+                    self.ssc_decode = ssc_decode
+                    self.fast_ssc_decode = fast_ssc_decode
+                    self.sscl_spc_decode = sscl_spc_decode_hybrid
+
+                except ImportError:
+                    raise ImportError("Was not able to load the compiled encoder.")
+
+            else:
+                raise ValueError("Invalid implementation type: {}".format(obj.imp_type))
 
             self.n = np.uint8(obj.n)
             self.address_list = address_list_factory(self.n).astype(np.uint32)
@@ -189,30 +264,30 @@ class PolarCoding(object):
             return self.decoder(llr)
 
         def ssc_dec_sys(self, llr):
-            dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = self.ssc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
         def fast_ssc_dec_sys(self, llr):
-            dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = self.fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
             return dec_bits[self.information]
 
         def sscl_spc_dec_sys(self, llr):
-            betas = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+            betas = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
             dec_bits = betas[0, :2 ** self.n]
             return dec_bits[self.information]
 
         def ssc_dec(self, llr):
-            dec_bits = ssc_decode(self.n, llr, self.tasks, self.address_list)
-            dec_bits = encode(dec_bits, self.n)
+            dec_bits = self.ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = self.encode(dec_bits, self.n)
             return dec_bits[self.information]
 
         def fast_ssc_dec(self, llr):
-            dec_bits = fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
-            dec_bits = encode(dec_bits, self.n)
+            dec_bits = self.fast_ssc_decode(self.n, llr, self.tasks, self.address_list)
+            dec_bits = self.encode(dec_bits, self.n)
             return dec_bits[self.information]
 
         def sscl_spc_dec(self, llr):
-            betas = sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+            betas = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
             dec_bits = betas[0, :2 ** self.n]
-            dec_bits = encode(dec_bits, self.n)
+            dec_bits = self.encode(dec_bits, self.n)
             return dec_bits[self.information]

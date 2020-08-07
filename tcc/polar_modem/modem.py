@@ -29,7 +29,8 @@ class Modem:
         self.dem = Demodulator(PolarConstellation(), parameters.demod_type, parameters.bits_p_symbol)
         rel_idx = construction(parameters.construction_method, parameters.n, parameters.base_design_snr)
         self.polar = PolarCoding(parameters.n, self.K, rel_idx, decoding_algorithm=parameters.decoding_algorithm,
-                                 list_size=parameters.list_size, encoding_mode=parameters.encoding_mode)
+                                 list_size=parameters.list_size, encoding_mode=parameters.encoding_mode,
+                                 implementation_type=parameters.implementation_type)
 
         # Initialization
         self.txbits = None

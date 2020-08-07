@@ -171,6 +171,13 @@
       "default_value": "systematic",
       "param_text": "Polar code encoding mode"
     },
+    "implementation_type": {
+      "param_options": ["python",
+                        "pythran",
+                        "hybrid"],
+      "default_value": "pythran",
+      "param_text": "Polar encoding/decoding implementation."
+    },
     "base_design_snr": {
       "param_options": null,
       "default_value": 0,

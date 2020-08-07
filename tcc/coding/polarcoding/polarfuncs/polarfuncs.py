@@ -600,6 +600,9 @@ def fast_ssc_decode(n, alphas, tasks, address_list):
     return beta_array[:2 ** n]
 
 
+# TODO: currently, for rate-0 nodes the metrics are not sorted after being updated
+#   therefore, if the last node is rate-0 (very unlikely), the 0-th element of the beta_array
+#   is not the one with the smallest path.
 def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
     """
     Perform systematic list decoding.

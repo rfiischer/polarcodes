@@ -14,12 +14,13 @@ from tcc.coding.polarcoding.construction import bhattacharyya
 n = 12
 k = 2048
 esn0 = 10
-frames = 1000
+frames = 10
 list_size = 1
 decoding_type = 'sscl-spc'
 encoding_mode = 'systematic'
+implementation_type = 'pythran'
 pc = PolarCoding(n, k, bhattacharyya(n, esn0)[0], decoding_algorithm=decoding_type, list_size=list_size,
-                 encoding_mode=encoding_mode)
+                 encoding_mode=encoding_mode, implementation_type=implementation_type)
 
 for frame in range(0, frames):
     bits = np.random.randint(0, 2, k, dtype=np.uint8)

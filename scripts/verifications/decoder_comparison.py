@@ -16,11 +16,12 @@ from tcc.core.utils.constellation import PolarConstellation
 
 
 # Larger test with R = 1/2
-n = 12
-K = 2048
+n = 8
+K = 2 ** (n - 1)
 esn0 = 0
 pc_ssc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], 'ssc')
 pc_fssc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], 'fast-ssc')
+pc_sscl = PolarCoding(n, K, bhattacharyya(n, esn0)[0], 'sscl-spc', list_size=1)
 
 rng = np.random.RandomState(120987)
 const = PolarConstellation()
@@ -41,7 +42,8 @@ for i in range(reps):
 
     decoded_ssc = pc_ssc.decode(demodulated)
     decoded_fssc = pc_fssc.decode(demodulated)
-    if not np.all(decoded_ssc == decoded_fssc):
+    decoded_sscl = pc_sscl.decode(demodulated)
+    if not (np.all(decoded_ssc == decoded_fssc) and np.all(decoded_ssc == decoded_sscl)):
         print("ERROR!")
         print('\n')
         larger_errors += 1

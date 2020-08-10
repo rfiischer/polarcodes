@@ -31,16 +31,23 @@ class PolarSimulation(Simulation):
                                         ('fer', True)])
 
         # Get seeds
-        rng = np.random.RandomState(parameters.seed)
-        seeds = [rng.randint(0, 2 ** 32, dtype=np.int64) for _ in range(parameters.num_workers)]
+        if parameters.seed == -1:
+            ss = np.random.SeedSequence()
+
+        else:
+            ss = np.random.SeedSequence(parameters.seed)
+
+        self.logger.info("seed = {}\n".format(ss.entropy))
+
+        random_generators = [np.random.default_rng(s) for s in ss.spawn(parameters.num_workers)]
 
         # Workers
         self.num_workers = parameters.num_workers
         self.frame_pack_size = parameters.frame_pack_size
         self.job_queue = mp.JoinableQueue()
         self.results_queue = mp.Queue()
-        self.workers = [PolarWorker(parameters, seed, self.results_queue, self.shutdown, self.job_queue)
-                        for seed in seeds]
+        self.workers = [PolarWorker(parameters, rng, self.results_queue, self.shutdown, self.job_queue)
+                        for rng in random_generators]
 
         # SNR Manager
         self.snr_config = SnrConfig({'counter_name': 'ber',

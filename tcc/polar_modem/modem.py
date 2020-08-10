@@ -47,7 +47,7 @@ class Modem:
         self.polar.rel_idx = rel_idx
 
     def tx(self):
-        self.txbits = self.rng.randint(0, 2, self.K, dtype=np.uint8)
+        self.txbits = self.rng.integers(0, 2, self.K, dtype=np.uint8)
         coded = self.polar.encode(self.txbits)
         modulated = self.mod(coded)
         return modulated

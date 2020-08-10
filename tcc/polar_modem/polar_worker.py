@@ -7,9 +7,9 @@ from tcc.polar_modem.modem import Modem
 
 class PolarWorker(Worker):
 
-    def __init__(self, parameters, seed, results_queue, shutdown_event, job_queue):
+    def __init__(self, parameters, rng, results_queue, shutdown_event, job_queue):
         # Call super class initialization
-        super().__init__(seed, results_queue, shutdown_event, job_queue)
+        super().__init__(rng, results_queue, shutdown_event, job_queue)
 
         self.modem = Modem(parameters, self.rng)
 

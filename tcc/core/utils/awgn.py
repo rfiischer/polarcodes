@@ -58,7 +58,7 @@ class AWGN(object):
             raise ValueError('Either the SNR or variance must be set')
 
         std_dev = np.sqrt(self.variance)
-        n = std_dev * (self.rng.randn(num_samples) + 1j * self.rng.randn(num_samples))
+        n = std_dev * (self.rng.normal(size=num_samples) + 1j * self.rng.normal(size=num_samples))
 
         return signal + n
 

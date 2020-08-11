@@ -21,8 +21,6 @@ def main(parameter_file=None, args=None):
     setup_logging(handler.log_file, handler.log_debug)
     logger = logging.getLogger(__name__)
 
-    simulation = PolarSimulation(handler)
-
     try:
         label = subprocess.check_output(["git", "describe", "--always"]).strip()
 
@@ -30,7 +28,9 @@ def main(parameter_file=None, args=None):
         label = b'**no git**'
 
     logger.info("\n### Running simulation! \n### Version: {}\n".format(label.decode()))
-    logger.info('parameters = \n {}'.format(handler.dump_params()))
+    logger.info('parameters = \n {}\n'.format(handler.dump_params()))
+
+    simulation = PolarSimulation(handler)
 
     start_time = time()
     simulation.run()

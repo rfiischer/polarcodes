@@ -22,6 +22,7 @@ class Modem:
         self.rate = self.K / 2 ** self.n
         self._snr = parameters.base_design_snr
         self.construction_method = parameters.construction_method
+        self.frozen_design = parameters.frozen_design
 
         # Objects
         self.rng = rng
@@ -43,8 +44,9 @@ class Modem:
     @snr.setter
     def snr(self, value):
         self._snr = value
-        rel_idx = construction(self.construction_method, self.n, self._snr)
-        self.polar.rel_idx = rel_idx
+        if not self.frozen_design:
+            rel_idx = construction(self.construction_method, self.n, self._snr)
+            self.polar.rel_idx = rel_idx
 
     def tx(self):
         self.txbits = self.rng.integers(0, 2, self.K, dtype=np.uint8)

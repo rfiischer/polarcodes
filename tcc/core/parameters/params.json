@@ -182,6 +182,11 @@
       "param_options": null,
       "default_value": 0,
       "param_text": "Base design SNR"
+    },
+    "frozen_design": {
+      "param_options": [true, false],
+      "default_value": false,
+      "param_text": "Wether the change of SNR affects or not the polar code design."
     }
   },
   "RUN": {

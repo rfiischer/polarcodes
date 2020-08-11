@@ -33,7 +33,10 @@
   },
   "SNR": {
     "snr_range_type": {
-      "param_options": null,
+      "param_options": [
+        "range",
+        "dynamic"
+      ],
       "default_value": "range",
       "param_text": "SNR range type: 'dynamic' or 'range'"
     },
@@ -125,8 +128,10 @@
   },
   "POLAR": {
     "demod_type": {
-      "param_options": ["llr_exact",
-                        "max-log"],
+      "param_options": [
+        "llr_exact",
+        "max-log"
+      ],
       "default_value": "llr_exact",
       "param_text": "Wether to use the max-log approximation or calculate the exact LLR"
     },
@@ -146,17 +151,21 @@
       "param_text": "Number of bits per symbol"
     },
     "construction_method": {
-      "param_options": ["bhattacharyya",
-                        "tahir",
-                        "mdega",
-                        "dega"],
+      "param_options": [
+        "bhattacharyya",
+        "tahir",
+        "mdega",
+        "dega"
+      ],
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
     },
     "decoding_algorithm": {
-      "param_options": ["ssc",
-                        "fast-ssc",
-                        "sscl-spc"],
+      "param_options": [
+        "ssc",
+        "fast-ssc",
+        "sscl-spc"
+      ],
       "default_value": "ssc",
       "param_text": "Polar code decoding algorithm"
     },
@@ -166,15 +175,19 @@
       "param_text": "List decoding size"
     },
     "encoding_mode": {
-      "param_options": ["systematic",
-                        "non-systematic"],
+      "param_options": [
+        "systematic",
+        "non-systematic"
+      ],
       "default_value": "systematic",
       "param_text": "Polar code encoding mode"
     },
     "implementation_type": {
-      "param_options": ["python",
-                        "pythran",
-                        "hybrid"],
+      "param_options": [
+        "python",
+        "pythran",
+        "hybrid"
+      ],
       "default_value": "pythran",
       "param_text": "Polar encoding/decoding implementation."
     },

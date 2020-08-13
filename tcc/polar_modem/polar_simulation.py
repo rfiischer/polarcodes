@@ -13,6 +13,7 @@ from tcc.core.simulation import Simulation
 from tcc.polar_modem.polar_worker import PolarWorker
 from tcc.core.utils.statistics import Statistics
 from tcc.core.utils.snr_manager import snr_manager_builder, SnrConfig
+from tcc.core.utils.awgn import AWGN
 
 
 class PolarSimulation(Simulation):
@@ -62,7 +63,8 @@ class PolarSimulation(Simulation):
                                                        'target_stats': parameters.frame_target_stats}})
 
         if parameters.dynamic_shannon_start:
-            start_snr_db = self.workers[0].awgn.shannon_limit()
+            start_snr_db = AWGN.shannon_limit(parameters.bits_p_symbol, parameters.k / 2 ** parameters.n,
+                                              parameters.snr_unit)
 
         else:
             start_snr_db = parameters.start_snr_db

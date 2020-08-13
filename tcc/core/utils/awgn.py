@@ -62,16 +62,17 @@ class AWGN(object):
 
         return signal + n
 
-    def shannon_limit(self):
+    @staticmethod
+    def shannon_limit(bits_p_symbol, efficiency_factor, snr_unit):
         """Returns Shannon's SNR limit to free error transmission"""
 
-        spec_eff = self.bits_p_symbol * self.efficiency_factor
+        spec_eff = bits_p_symbol * efficiency_factor
         ebn0_lim = (2 ** spec_eff - 1) / spec_eff
 
-        if self.snr_unit == "EbN0_dB":
+        if snr_unit == "EbN0_dB":
             ret_val = ebn0_lim
 
-        elif self.snr_unit == "EsN0_dB":
+        elif snr_unit == "EsN0_dB":
             ret_val = ebn0_lim * spec_eff
 
         else:

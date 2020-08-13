@@ -78,7 +78,7 @@ try:
                     alpha_right(alpha_array[i, :], beta_array[i, :], address_list, task[0])
 
         # Outputting the whole array enables the use of CRC list decoding
-        return beta_array
+        return beta_array, metrics, num_paths
 
 
 except ImportError:

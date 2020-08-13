@@ -164,7 +164,8 @@
       "param_options": [
         "ssc",
         "fast-ssc",
-        "sscl-spc"
+        "sscl-spc",
+        "sscl-spc-crc"
       ],
       "default_value": "ssc",
       "param_text": "Polar code decoding algorithm"
@@ -200,6 +201,11 @@
       "param_options": [true, false],
       "default_value": false,
       "param_text": "Wether the change of SNR affects or not the polar code design."
+    },
+    "crc_id": {
+      "param_options": null,
+      "default_value": null,
+      "param_text": "The CRC polynomial used in CRC modes. The CRC length must be multiple of 4."
     }
   },
   "RUN": {

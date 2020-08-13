@@ -790,7 +790,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                 alpha_right(alpha_array[i, :], beta_array[i, :], address_list, task[0])
 
     # Outputting the whole array enables the use of CRC list decoding
-    return beta_array
+    return beta_array, metrics, num_paths
 
 
 def rate_1(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):

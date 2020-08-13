@@ -12,6 +12,7 @@ from tcc.core.utils.mod_demod import Modulator, Demodulator
 from tcc.core.utils.constellation import PolarConstellation
 from tcc.coding.polarcoding.polarcoding import PolarCoding
 from tcc.coding.polarcoding.construction import construction
+from tcc.coding.crc import CRC
 
 
 class Modem:
@@ -29,9 +30,25 @@ class Modem:
         self.mod = Modulator(PolarConstellation(), parameters.bits_p_symbol)
         self.dem = Demodulator(PolarConstellation(), parameters.demod_type, parameters.bits_p_symbol)
         rel_idx = construction(parameters.construction_method, parameters.n, parameters.base_design_snr)
-        self.polar = PolarCoding(parameters.n, self.K, rel_idx, decoding_algorithm=parameters.decoding_algorithm,
-                                 list_size=parameters.list_size, encoding_mode=parameters.encoding_mode,
-                                 implementation_type=parameters.implementation_type)
+
+        if parameters.decoding_algorithm == 'sscl-spc-crc':
+            if parameters.crc_id:
+                self.crc = CRC(parameters.crc_id)
+                self.tx_size = self.K - self.crc.len_bit
+
+            else:
+                raise ValueError("A CRC ID must be provided.")
+
+        else:
+            self.crc = None
+            self.tx_size = self.K
+
+        self.polar = PolarCoding(parameters.n, self.K, rel_idx,
+                                 decoding_algorithm=parameters.decoding_algorithm,
+                                 list_size=parameters.list_size,
+                                 encoding_mode=parameters.encoding_mode,
+                                 implementation_type=parameters.implementation_type,
+                                 crc=self.crc)
 
         # Initialization
         self.txbits = None
@@ -49,7 +66,7 @@ class Modem:
             self.polar.rel_idx = rel_idx
 
     def tx(self):
-        self.txbits = self.rng.integers(0, 2, self.K, dtype=np.uint8)
+        self.txbits = self.rng.integers(0, 2, self.tx_size, dtype=np.uint8)
         coded = self.polar.encode(self.txbits)
         modulated = self.mod(coded)
         return modulated

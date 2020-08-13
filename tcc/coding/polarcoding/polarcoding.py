@@ -15,7 +15,7 @@ class PolarCoding(object):
     """
 
     def __init__(self, n, k, rel_idx=None, decoding_algorithm='ssc', list_size=None, encoding_mode='systematic',
-                 implementation_type='pythran'):
+                 implementation_type='pythran', crc=None):
         """
 
         :param n: Block size N = 2^n
@@ -35,6 +35,7 @@ class PolarCoding(object):
         self.list_size = list_size
         self.enc_mode = encoding_mode
         self.imp_type = implementation_type
+        self.crc = crc
 
         if rel_idx is not None:
             if not np.array_equal(np.sort(rel_idx), np.arange(0, self.N)):
@@ -48,8 +49,8 @@ class PolarCoding(object):
         self.information = self._rel_idx[:self.K]
         self.frozen = self._rel_idx[self.K:]
 
-        self.encode = self.Encode(self)
-        self.decode = self.Decode(self)
+        self.encode = PolarCoding.Encode(self)
+        self.decode = PolarCoding.Decode(self)
 
     @property
     def rel_idx(self):
@@ -70,8 +71,8 @@ class PolarCoding(object):
         self.information = self._rel_idx[:self.K]
         self.frozen = self._rel_idx[self.K:]
 
-        self.encode = self.Encode(self)
-        self.decode = self.Decode(self)
+        self.encode = PolarCoding.Encode(self)
+        self.decode = PolarCoding.Decode(self)
 
     def _generate_g(self):
         """
@@ -118,12 +119,18 @@ class PolarCoding(object):
             else:
                 raise ValueError("Invalid implementation type: {}".format(obj.imp_type))
 
+            self.crc = obj.crc
+
         def __call__(self, bits):
             """
             Perform polar encoding
             :param bits: integer unidimensional ndarray of 0's and 1's
             :return: b * Fn
             """
+
+            if self.crc is not None:
+                crc = self.crc(bits)
+                bits = np.concatenate((bits, crc))
 
             return self.enc(bits)
 
@@ -246,8 +253,16 @@ class PolarCoding(object):
                 else:
                     self.decoder = self.fast_ssc_dec
 
-            elif obj.dec_type == 'sscl-spc':
+            elif obj.dec_type in ['sscl-spc', 'sscl-spc-crc']:
                 self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
+
+                if obj.list_size is None:
+                    raise ValueError("Please provide a list size for sscl-spc/spc-crc modes.")
+
+                if obj.dec_type == 'sscl-spc-crc' and obj.crc is None:
+                    raise ValueError("Please provide a CRC on sscl-spc-crc mode.")
+
+                self.crc = obj.crc
                 self.list_size = np.uint8(obj.list_size)
                 self.tasks = sscl_spc_scheduler(self.n, self.node_sheet)
 
@@ -272,9 +287,36 @@ class PolarCoding(object):
             return dec_bits[self.information]
 
         def sscl_spc_dec_sys(self, llr):
-            betas = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
-            dec_bits = betas[0, :2 ** self.n]
-            return dec_bits[self.information]
+            betas, metrics, n_paths = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+
+            if self.crc is None:
+                dec_bits = betas[0, :2 ** self.n]
+                output = dec_bits[self.information]
+
+            else:
+                valid_paths = []
+                code_word = []
+                for path in range(n_paths):
+                    code_w = betas[path, :2 ** self.n]
+                    bits = code_w[self.information]
+                    rec_crc = bits[-self.crc.len_bit:]
+                    obt_crc = self.crc(bits[:-self.crc.len_bit])
+
+                    code_word.append(bits)
+                    if np.all(rec_crc == obt_crc):
+                        valid_paths.append(path)
+
+                if valid_paths:
+                    order = np.argsort(metrics[valid_paths])
+                    final_path = valid_paths[order[0]]
+
+                else:
+                    order = np.argsort(metrics[:n_paths])
+                    final_path = order[0]
+
+                output = code_word[final_path][:-self.crc.len_bit]
+
+            return output
 
         def ssc_dec(self, llr):
             dec_bits = self.ssc_decode(self.n, llr, self.tasks, self.address_list)
@@ -287,7 +329,35 @@ class PolarCoding(object):
             return dec_bits[self.information]
 
         def sscl_spc_dec(self, llr):
-            betas = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
-            dec_bits = betas[0, :2 ** self.n]
-            dec_bits = self.encode(dec_bits, self.n)
-            return dec_bits[self.information]
+            betas, metrics, n_paths = self.sscl_spc_decode(self.n, self.list_size, llr, self.tasks, self.address_list)
+
+            if self.crc is None:
+                dec_bits = betas[0, :2 ** self.n]
+                dec_bits = self.encode(dec_bits, self.n)
+                output = dec_bits[self.information]
+
+            else:
+                valid_paths = []
+                code_word = []
+                for path in range(n_paths):
+                    code_w = betas[path, :2 ** self.n]
+                    code_w = self.encode(code_w, self.n)
+                    bits = code_w[self.information]
+                    rec_crc = bits[-self.crc.len_bit:]
+                    obt_crc = self.crc(bits[:-self.crc.len_bit])
+
+                    code_word.append(bits)
+                    if np.all(rec_crc == obt_crc):
+                        valid_paths.append(path)
+
+                if valid_paths:
+                    order = np.argsort(metrics[valid_paths])
+                    final_path = valid_paths[order[0]]
+
+                else:
+                    order = np.argsort(metrics[:n_paths])
+                    final_path = order[0]
+
+                output = code_word[final_path][:-self.crc.len_bit]
+
+            return output

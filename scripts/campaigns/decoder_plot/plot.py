@@ -41,7 +41,7 @@ plot_ber(plot_list,
          colours[:len(methods)],
          thickness,
          ylim=[1e-7, 1],
-         xlim=[-3, 0],
+         xlim=[0, 3],
          xlabel=r'$E_s/N_0$ (dB)')
 
 plt.show()

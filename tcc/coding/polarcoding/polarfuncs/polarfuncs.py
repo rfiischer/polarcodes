@@ -745,16 +745,20 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
                 old_alpha_array = np.copy(alpha_array)
                 old_beta_array = np.copy(beta_array)
+                old_idx_min = np.copy(idx_min)
+                old_parity = np.copy(parity)
+                old_min_alphas = np.copy(min_alphas)
+                old_acc_parity = np.copy(acc_parity)
                 for idx, path in enumerate(final_paths):
                     old_idx = int(path[0])
                     value = np.uint8(path[1])
                     metric = path[2]
                     i_bit = int(path[3])
 
-                    idx_min[idx] = idx_min[old_idx]
-                    parity[idx] = parity[old_idx]
-                    min_alphas[idx] = min_alphas[old_idx]
-                    acc_parity[idx] = acc_parity[old_idx] + value
+                    idx_min[idx] = old_idx_min[old_idx]
+                    parity[idx] = old_parity[old_idx]
+                    min_alphas[idx] = old_min_alphas[old_idx]
+                    acc_parity[idx] = (old_acc_parity[old_idx] + value) % 2
 
                     alpha_array[idx, :] = old_alpha_array[old_idx, :]
 
@@ -919,16 +923,20 @@ def spc(list_size, num_paths, alpha_array, beta_array, metrics, address, address
 
         old_alpha_array = np.copy(alpha_array)
         old_beta_array = np.copy(beta_array)
+        old_idx_min = np.copy(idx_min)
+        old_parity = np.copy(parity)
+        old_min_alphas = np.copy(min_alphas)
+        old_acc_parity = np.copy(acc_parity)
         for idx, path in enumerate(final_paths):
             old_idx = int(path[0])
             value = np.uint8(path[1])
             metric = path[2]
             i_bit = int(path[3])
 
-            idx_min[idx] = idx_min[old_idx]
-            parity[idx] = parity[old_idx]
-            min_alphas[idx] = min_alphas[old_idx]
-            acc_parity[idx] = acc_parity[old_idx] + value
+            idx_min[idx] = old_idx_min[old_idx]
+            parity[idx] = old_parity[old_idx]
+            min_alphas[idx] = old_min_alphas[old_idx]
+            acc_parity[idx] = (old_acc_parity[old_idx] + value) % 2
 
             alpha_array[idx, :] = old_alpha_array[old_idx, :]
 

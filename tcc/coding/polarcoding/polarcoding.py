@@ -306,6 +306,7 @@ class PolarCoding(object):
                     if np.all(rec_crc == obt_crc):
                         valid_paths.append(path)
 
+                # TODO: replace argsort with argmax
                 if valid_paths:
                     order = np.argsort(metrics[valid_paths])
                     final_path = valid_paths[order[0]]

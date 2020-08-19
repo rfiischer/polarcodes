@@ -21,9 +21,9 @@ from tcc.coding.crc import CRC
 # Polar coding configuration
 permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 n = 3
-decoding_type = 'fast-ssc'
+decoding_type = 'sscl-spc'
 encoding_mode = 'non-systematic'
-implementation_type = 'pythran'
+implementation_type = 'python'
 list_size = 8
 crc_len = 32
 rng = np.random.RandomState(seed=124598)

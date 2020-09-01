@@ -23,7 +23,7 @@ permutation = [7, 6, 5, 3, 4, 2, 1, 0]
 n = 3
 decoding_type = 'sscl-spc'
 encoding_mode = 'non-systematic'
-implementation_type = 'python'
+implementation_type = 'pythran'
 list_size = 8
 crc_len = 32
 rng = np.random.RandomState(seed=124598)

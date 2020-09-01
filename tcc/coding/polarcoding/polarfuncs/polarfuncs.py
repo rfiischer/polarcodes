@@ -34,18 +34,15 @@ import numpy as np
 # pythran export alpha_left(float64[:], uint32[:, :], uint32)
 # pythran export alpha_right(float64[:], uint8[:], uint32[:, :], uint32)
 # pythran export betas(uint8[:], uint32[:, :], uint32)
-# TODO: add new functions
+# pythran export alpha_left_custom(float64[:], float64[:], uint32[:, :], uint32)
+# pythran export alpha_right_custom(float64[:], float64[:], uint8[:], uint32[:, :], uint32)
+# pythran export betas_custom(uint8[:], uint8[:], uint8[:], uint32[:, :], uint32)
 
 # pythran export encode(uint8[:], uint8)
 
 # pythran export ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 # pythran export fast_ssc_decode(uint8, float64[:], uint32 list list, uint32[:, :])
 # pythran export sscl_spc_decode(uint8, uint8, float64[:], uint32 list list, uint32[:, :])
-
-# pythran export rate_1(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
-# pythran export rep(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
-# pythran export spc(uint8, uint8, float64[:, :], uint8[:, :], float64[:], uint32, uint32[:, :])
-# pythran export rate_0(uint8, float64[:, :], float64[:], uint32, uint32[:, :])
 
 
 # Base functions
@@ -689,7 +686,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
     for task in tasks:
         if task[1] == 1:
 
-            parent_node = task[0]
+            parent_node = int(task[0])
             start_h = address_list[parent_node, 0]
             size = address_list[parent_node, 5]
             node_betas = np.zeros((list_size, size), dtype=np.uint8)
@@ -739,7 +736,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
         elif task[1] == 2:
 
-            parent_node = task[0]
+            parent_node = int(task[0])
             start_h = address_list[parent_node, 0]
             size = address_list[parent_node, 5]
 
@@ -747,7 +744,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
 
             for idx in range(num_paths):
-                alpha_path = alpha_pointer_array[int(metrics[idx, 1]), parent_node]
+                alpha_path = int(alpha_pointer_array[int(metrics[idx, 1]), parent_node])
                 alphas = alpha_array[alpha_path, start_h:start_h + size]
                 metric = metrics[idx, 0]
 
@@ -778,7 +775,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
         elif task[1] == 3:
 
-            parent_node = task[0]
+            parent_node = int(task[0])
             start_h = address_list[parent_node, 0]
             size = address_list[parent_node, 5]
             node_betas = np.zeros((list_size, size), dtype=np.uint8)
@@ -867,20 +864,20 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             size = address_list[parent_node, 5]
 
             for idx in range(num_paths):
-                alpha_path = alpha_pointer_array[idx, parent_node]
+                alpha_path = int(alpha_pointer_array[idx, parent_node])
                 alphas = alpha_array[alpha_path, start_h:start_h + size]
                 metrics[idx, 0] += 1 / 2 * np.sum(np.abs(alphas) - alphas)
 
         # TODO: sometimes, the node_path coincides with range()
         elif task[1] == 5:
 
-            parent_node = task[0]
-            left_child_node = 2 * parent_node + 1
-            right_child_node = 2 * parent_node + 2
+            parent_node = int(task[0])
+            left_child_node = int(2 * parent_node + 1)
+            right_child_node = int(2 * parent_node + 2)
 
             for i in range(num_paths):
-                left_beta_node_path = beta_pointer_array[i, left_child_node]
-                right_beta_node_path = beta_pointer_array[i, right_child_node]
+                left_beta_node_path = int(beta_pointer_array[i, left_child_node])
+                right_beta_node_path = int(beta_pointer_array[i, right_child_node])
 
                 betas_custom(beta_array[i, :], beta_array[left_beta_node_path, :], beta_array[right_beta_node_path, :],
                              address_list, parent_node)
@@ -890,10 +887,10 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
         elif task[1] == 6:
 
             parent_node = task[0]
-            child_node = 2 * parent_node + 1
+            child_node = int(2 * parent_node + 1)
 
             for i in range(num_paths):
-                parent_node_path = alpha_pointer_array[i, parent_node]
+                parent_node_path = int(alpha_pointer_array[i, parent_node])
                 alpha_left_custom(alpha_array[parent_node_path, :], alpha_array[i, :], address_list, parent_node)
 
                 alpha_pointer_array[i, child_node] = i
@@ -902,182 +899,16 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
 
             parent_node = task[0]
             left_child_node = 2 * parent_node + 1
-            right_child_node = 2 * parent_node + 2
+            right_child_node = int(2 * parent_node + 2)
 
             for i in range(num_paths):
                 parent_alpha_node_path = alpha_pointer_array[i, parent_node]
-                left_beta_node_path = beta_pointer_array[i, left_child_node]
+                left_beta_node_path = int(beta_pointer_array[i, left_child_node])
 
-                alpha_right_custom(alpha_array[parent_alpha_node_path, :], alpha_array[i, :],
+                alpha_right_custom(alpha_array[int(parent_alpha_node_path), :], alpha_array[i, :],
                                    beta_array[left_beta_node_path, :], address_list, parent_node)
 
                 alpha_pointer_array[i, right_child_node] = i
 
     # Outputting the whole array enables the use of CRC list decoding
     return beta_array, metrics, num_paths
-
-
-# TODO: update hybrid functions
-def rate_1(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
-
-    start_h = address_list[address, 0]
-    size = address_list[address, 5]
-
-    for i in range(size):
-
-        num_final_paths = min(2 * num_paths, list_size)
-        next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
-
-        for idx in range(num_paths):
-            alpha = alpha_array[idx, start_h + i]
-            metric = metrics[idx]
-
-            pm0 = metric + 1 / 2 * (abs(alpha) - alpha)
-            pm1 = metric + 1 / 2 * (abs(alpha) + alpha)
-
-            next_metrics[2 * idx, :] = [idx, 0.0, pm0]
-            next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
-
-        metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
-        final_paths = next_metrics[metrics_order]
-
-        old_alpha_array = np.copy(alpha_array)
-        old_beta_array = np.copy(beta_array)
-        for idx, path in enumerate(final_paths):
-            old_idx = int(path[0])
-            value = np.uint8(path[1])
-            metric = path[2]
-
-            alpha_array[idx, :] = old_alpha_array[old_idx, :]
-
-            beta_array[idx, :] = old_beta_array[old_idx, :]
-            beta_array[idx, int(start_h) + i] = value
-
-            metrics[idx] = metric
-
-        num_paths = num_final_paths
-
-    return num_paths
-
-
-def rep(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
-    start_h = address_list[address, 0]
-    size = address_list[address, 5]
-
-    num_final_paths = min(2 * num_paths, list_size)
-    next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
-
-    for idx in range(num_paths):
-        alphas = alpha_array[idx, start_h:start_h + size]
-        metric = metrics[idx]
-
-        pm0 = metric + 1 / 2 * np.sum(np.abs(alphas) - alphas)
-        pm1 = metric + 1 / 2 * np.sum(np.abs(alphas) + alphas)
-
-        next_metrics[2 * idx, :] = [idx, 0.0, pm0]
-        next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
-
-    metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
-    final_paths = next_metrics[metrics_order]
-
-    old_alpha_array = np.copy(alpha_array)
-    old_beta_array = np.copy(beta_array)
-    for idx, path in enumerate(final_paths):
-        old_idx = int(path[0])
-        value = np.uint8(path[1])
-        metric = path[2]
-
-        alpha_array[idx, :] = old_alpha_array[old_idx, :]
-
-        beta_array[idx, :] = old_beta_array[old_idx, :]
-        beta_array[idx, start_h:start_h + size] = value * np.ones(size, dtype=np.uint8)
-
-        metrics[idx] = metric
-
-    num_paths = num_final_paths
-
-    return num_paths
-
-
-def spc(list_size, num_paths, alpha_array, beta_array, metrics, address, address_list):
-
-    start_h = address_list[address, 0]
-    size = address_list[address, 5]
-
-    node_alphas = alpha_array[:, start_h: start_h + size]
-
-    idx_min = np.argmin(np.abs(node_alphas), axis=-1).flatten()
-    parity_array = np.ones(node_alphas.shape, dtype=np.uint8)
-    parity_array[node_alphas >= 0] = 0
-    parity = np.sum(parity_array, axis=-1) % 2
-    min_alphas = np.min(np.abs(node_alphas), axis=-1)
-    acc_parity = np.zeros(idx_min.shape, dtype=np.uint8)
-
-    for idx in range(num_paths):
-        metrics[idx] = metrics[idx] + min_alphas[idx] if parity[idx] else metrics[idx]
-
-    for i in range(size - 1):
-
-        num_final_paths = min(2 * num_paths, list_size)
-        next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
-
-        for idx in range(num_paths):
-            if idx_min[idx] <= i:
-                i_bit = i + 1
-
-            else:
-                i_bit = i
-
-            alpha = alpha_array[idx, start_h + i_bit]
-            metric = metrics[idx]
-
-            pm0 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
-                if alpha < 0 else metric
-            pm1 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
-                if alpha >= 0 else metric
-
-            next_metrics[2 * idx, :] = [idx, 0.0, pm0, i_bit]
-            next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1, i_bit]
-
-        metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
-        final_paths = next_metrics[metrics_order]
-
-        old_alpha_array = np.copy(alpha_array)
-        old_beta_array = np.copy(beta_array)
-        old_idx_min = np.copy(idx_min)
-        old_parity = np.copy(parity)
-        old_min_alphas = np.copy(min_alphas)
-        old_acc_parity = np.copy(acc_parity)
-        for idx, path in enumerate(final_paths):
-            old_idx = int(path[0])
-            value = np.uint8(path[1])
-            metric = path[2]
-            i_bit = int(path[3])
-
-            idx_min[idx] = old_idx_min[old_idx]
-            parity[idx] = old_parity[old_idx]
-            min_alphas[idx] = old_min_alphas[old_idx]
-            acc_parity[idx] = (old_acc_parity[old_idx] + value) % 2
-
-            alpha_array[idx, :] = old_alpha_array[old_idx, :]
-
-            beta_array[idx, :] = old_beta_array[old_idx, :]
-            beta_array[idx, int(start_h) + i_bit] = value
-
-            metrics[idx] = metric
-
-        num_paths = num_final_paths
-
-    for idx, parity in enumerate(acc_parity[:num_paths]):
-        beta_array[idx, int(start_h) + idx_min[idx]] = parity % 2
-
-    return num_paths
-
-
-def rate_0(num_paths, alpha_array, metrics, address, address_list):
-    start_h = address_list[address, 0]
-    size = address_list[address, 5]
-
-    for idx in range(num_paths):
-        alphas = alpha_array[idx, start_h:start_h + size]
-        metrics[idx] += 1 / 2 * np.sum(np.abs(alphas) - alphas)

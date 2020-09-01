@@ -107,7 +107,7 @@ class PolarCoding(object):
 
                 self.encode = encode
 
-            elif obj.imp_type == 'pythran' or obj.imp_type == 'hybrid':
+            elif obj.imp_type == 'pythran':
                 try:
                     from .polarfuncs.polarfuncs_compiled import encode
 
@@ -201,26 +201,6 @@ class PolarCoding(object):
                     self.ssc_decode = ssc_decode
                     self.fast_ssc_decode = fast_ssc_decode
                     self.sscl_spc_decode = sscl_spc_decode
-
-                except ImportError:
-                    raise ImportError("Was not able to load the compiled encoder.")
-
-            elif obj.imp_type == 'hybrid':
-                try:
-                    from .polarfuncs.polarfuncs_compiled import (
-                        address_list_factory,
-                        ssc_node_classifier,
-                        fast_ssc_node_classifier,
-                        encode,
-                        ssc_decode,
-                        fast_ssc_decode,
-                        sscl_spc_decode_hybrid
-                    )
-
-                    self.encode = encode
-                    self.ssc_decode = ssc_decode
-                    self.fast_ssc_decode = fast_ssc_decode
-                    self.sscl_spc_decode = sscl_spc_decode_hybrid
 
                 except ImportError:
                     raise ImportError("Was not able to load the compiled encoder.")

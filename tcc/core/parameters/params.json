@@ -186,8 +186,7 @@
     "implementation_type": {
       "param_options": [
         "python",
-        "pythran",
-        "hybrid"
+        "pythran"
       ],
       "default_value": "pythran",
       "param_text": "Polar encoding/decoding implementation."

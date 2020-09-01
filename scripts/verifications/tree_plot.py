@@ -7,7 +7,7 @@ Created on 20/05/2020 19:03
 """
 
 from tcc.coding.polarcoding import PolarCoding
-from tcc.coding.polarcoding.construction import bhattacharyya
+from tcc.coding.polarcoding.construction import tahir
 import matplotlib.pyplot as plt
 
 
@@ -16,7 +16,7 @@ n = 5
 K = 2 ** (n - 1)
 esn0 = 10
 decoding_type = 'sscl-spc'
-pc = PolarCoding(n, K, bhattacharyya(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
+pc = PolarCoding(n, K, tahir(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
 
 # Gather info
 nodes = pc.decode.node_sheet

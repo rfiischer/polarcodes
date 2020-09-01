@@ -308,11 +308,11 @@ class PolarCoding(object):
 
                 # TODO: replace argsort with argmax
                 if valid_paths:
-                    order = np.argsort(metrics[valid_paths])
+                    order = np.argsort(metrics[valid_paths, 0])
                     final_path = valid_paths[order[0]]
 
                 else:
-                    order = np.argsort(metrics[:n_paths])
+                    order = np.argsort(metrics[:n_paths, 0])
                     final_path = order[0]
 
                 output = code_word[final_path][:-self.crc.len_bit]
@@ -352,11 +352,11 @@ class PolarCoding(object):
                         valid_paths.append(path)
 
                 if valid_paths:
-                    order = np.argsort(metrics[valid_paths])
+                    order = np.argsort(metrics[valid_paths, 0])
                     final_path = valid_paths[order[0]]
 
                 else:
-                    order = np.argsort(metrics[:n_paths])
+                    order = np.argsort(metrics[:n_paths, 0])
                     final_path = order[0]
 
                 output = code_word[final_path][:-self.crc.len_bit]

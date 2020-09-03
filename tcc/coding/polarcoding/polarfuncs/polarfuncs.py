@@ -809,9 +809,9 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     alpha = alpha_array[alpha_path, start_h + i_bit]
                     metric = metrics[idx, 0]
 
-                    pm0 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
+                    pm0 = metric + abs(alpha) \
                         if alpha < 0 else metric
-                    pm1 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
+                    pm1 = metric + abs(alpha) \
                         if alpha >= 0 else metric
 
                     next_metrics[2 * idx, :] = [idx, alpha_path, 0.0, pm0, i_bit]

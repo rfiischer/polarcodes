@@ -694,7 +694,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             for i in range(size):
 
                 num_final_paths = min(2 * num_paths, list_size)
-                next_metrics = np.zeros((2 * num_paths, 3), dtype=np.float64)
+                next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
 
                 for idx in range(num_paths):
                     alpha_path = alpha_pointer_array[int(metrics[idx, 1]), parent_node]
@@ -704,22 +704,23 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     pm0 = metric + 1 / 2 * (abs(alpha) - alpha)
                     pm1 = metric + 1 / 2 * (abs(alpha) + alpha)
 
-                    next_metrics[2 * idx, :] = [idx, 0.0, pm0]
-                    next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1]
+                    next_metrics[2 * idx, :] = [idx, alpha_path, 0.0, pm0]
+                    next_metrics[2 * idx + 1, :] = [idx, alpha_path, 1.0, pm1]
 
-                metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+                metrics_order = np.argsort(next_metrics[:, 3])[:num_final_paths]
                 final_paths = next_metrics[metrics_order]
 
                 old_node_betas = np.copy(node_betas)
                 for idx, path in enumerate(final_paths):
                     old_idx = int(path[0])
-                    value = np.uint8(path[1])
-                    metric = path[2]
+                    alpha_path = path[1]
+                    value = np.uint8(path[2])
+                    metric = path[3]
 
                     node_betas[idx, :] = old_node_betas[old_idx, :]
                     node_betas[idx, i] = value
 
-                    metrics[idx, :] = [metric, old_idx]
+                    metrics[idx, :] = [metric, alpha_path]
 
                 num_paths = num_final_paths
 
@@ -795,7 +796,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
             for i in range(size - 1):
 
                 num_final_paths = min(2 * num_paths, list_size)
-                next_metrics = np.zeros((2 * num_paths, 4), dtype=np.float64)
+                next_metrics = np.zeros((2 * num_paths, 5), dtype=np.float64)
 
                 for idx in range(num_paths):
                     if idx_min[idx] <= i:
@@ -813,10 +814,10 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     pm1 = metric + abs(alpha) + (1 - 2 * parity[idx]) * min_alphas[idx] \
                         if alpha >= 0 else metric
 
-                    next_metrics[2 * idx, :] = [idx, 0.0, pm0, i_bit]
-                    next_metrics[2 * idx + 1, :] = [idx, 1.0, pm1, i_bit]
+                    next_metrics[2 * idx, :] = [idx, alpha_path, 0.0, pm0, i_bit]
+                    next_metrics[2 * idx + 1, :] = [idx, alpha_path, 1.0, pm1, i_bit]
 
-                metrics_order = np.argsort(next_metrics[:, 2])[:num_final_paths]
+                metrics_order = np.argsort(next_metrics[:, 3])[:num_final_paths]
                 final_paths = next_metrics[metrics_order]
 
                 # TODO: instead of copying idx, parity, ..., use the metrics[:, 1] path info to get the right element
@@ -827,9 +828,10 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                 old_acc_parity = np.copy(acc_parity)
                 for idx, path in enumerate(final_paths):
                     old_idx = int(path[0])
-                    value = np.uint8(path[1])
-                    metric = path[2]
-                    i_bit = int(path[3])
+                    alpha_path = path[1]
+                    value = np.uint8(path[2])
+                    metric = path[3]
+                    i_bit = int(path[4])
 
                     idx_min[idx] = old_idx_min[old_idx]
                     parity[idx] = old_parity[old_idx]
@@ -839,7 +841,7 @@ def sscl_spc_decode(n, list_size, alphas, tasks, address_list):
                     node_betas[idx, :] = old_node_betas[old_idx, :]
                     node_betas[idx, i_bit] = value
 
-                    metrics[idx, :] = [metric, old_idx]
+                    metrics[idx, :] = [metric, alpha_path]
 
                 num_paths = num_final_paths
 

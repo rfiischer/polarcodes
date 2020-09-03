@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 
 
 # Setup
-n = 5
+n = 11
 K = 2 ** (n - 1)
-esn0 = 10
+esn0 = -1
 decoding_type = 'sscl-spc'
 pc = PolarCoding(n, K, tahir(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
 

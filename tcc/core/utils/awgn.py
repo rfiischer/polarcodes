@@ -79,3 +79,19 @@ class AWGN(object):
             raise ValueError('Invalid SNR unit')
 
         return 10 * np.log10(ret_val)
+
+    @staticmethod
+    def unit_conversion(value, bits_p_symbol, efficiency_factor, snr_from, snr_to):
+        if snr_to == snr_from and snr_to in ['EsN0_dB', 'EbN0_dB']:
+            output = value
+
+        elif snr_from == 'EsN0_dB' and snr_to == 'EbN0_dB':
+            output = value - 10 * np.log10(bits_p_symbol * efficiency_factor)
+
+        elif snr_from == 'EbN0_dB' and snr_to == 'EsN0_dB':
+            output = value + 10 * np.log10(bits_p_symbol * efficiency_factor)
+
+        else:
+            raise ValueError("The SNR units must be either EsN0_dB or EbN0_dB")
+
+        return output

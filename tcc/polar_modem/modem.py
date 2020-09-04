@@ -13,6 +13,7 @@ from tcc.core.utils.constellation import PolarConstellation
 from tcc.coding.polarcoding.polarcoding import PolarCoding
 from tcc.coding.polarcoding.construction import construction
 from tcc.coding.crc import CRC
+from tcc.core.utils.awgn import AWGN
 
 
 class Modem:
@@ -29,7 +30,11 @@ class Modem:
         self.rng = rng
         self.mod = Modulator(PolarConstellation(), parameters.bits_p_symbol)
         self.dem = Demodulator(PolarConstellation(), parameters.demod_type, parameters.bits_p_symbol)
-        rel_idx = construction(parameters.construction_method, parameters.n, parameters.base_design_snr)
+
+        base_design_snr = AWGN.unit_conversion(parameters.base_design_snr, parameters.bits_p_symbol,
+                                               parameters.k / 2 ** parameters.n, parameters.snr_unit,
+                                               'EsN0_dB')
+        rel_idx = construction(parameters.construction_method, parameters.n, base_design_snr)
 
         if parameters.decoding_algorithm == 'sscl-spc-crc':
             if parameters.crc_id:

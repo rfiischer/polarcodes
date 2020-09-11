@@ -58,23 +58,40 @@ class AWGN(object):
             raise ValueError('Either the SNR or variance must be set')
 
         std_dev = np.sqrt(self.variance)
-        n = std_dev * (self.rng.randn(num_samples) + 1j * self.rng.randn(num_samples))
+        n = std_dev * (self.rng.normal(size=num_samples) + 1j * self.rng.normal(size=num_samples))
 
         return signal + n
 
-    def shannon_limit(self):
+    @staticmethod
+    def shannon_limit(bits_p_symbol, efficiency_factor, snr_unit):
         """Returns Shannon's SNR limit to free error transmission"""
 
-        spec_eff = self.bits_p_symbol * self.efficiency_factor
+        spec_eff = bits_p_symbol * efficiency_factor
         ebn0_lim = (2 ** spec_eff - 1) / spec_eff
 
-        if self.snr_unit == "EbN0_dB":
+        if snr_unit == "EbN0_dB":
             ret_val = ebn0_lim
 
-        elif self.snr_unit == "EsN0_dB":
+        elif snr_unit == "EsN0_dB":
             ret_val = ebn0_lim * spec_eff
 
         else:
             raise ValueError('Invalid SNR unit')
 
         return 10 * np.log10(ret_val)
+
+    @staticmethod
+    def unit_conversion(value, bits_p_symbol, efficiency_factor, snr_from, snr_to):
+        if snr_to == snr_from and snr_to in ['EsN0_dB', 'EbN0_dB']:
+            output = value
+
+        elif snr_from == 'EsN0_dB' and snr_to == 'EbN0_dB':
+            output = value - 10 * np.log10(bits_p_symbol * efficiency_factor)
+
+        elif snr_from == 'EbN0_dB' and snr_to == 'EsN0_dB':
+            output = value + 10 * np.log10(bits_p_symbol * efficiency_factor)
+
+        else:
+            raise ValueError("The SNR units must be either EsN0_dB or EbN0_dB")
+
+        return output

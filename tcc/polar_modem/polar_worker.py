@@ -7,18 +7,19 @@ from tcc.polar_modem.modem import Modem
 
 class PolarWorker(Worker):
 
-    def __init__(self, parameters, seed, results_queue, shutdown_event, job_queue):
+    def __init__(self, parameters, rng, results_queue, shutdown_event, job_queue):
         # Call super class initialization
-        super().__init__(seed, results_queue, shutdown_event, job_queue)
+        super().__init__(rng, results_queue, shutdown_event, job_queue)
 
-        self.modem = Modem(parameters, self.rng)
-
-        self.awgn = AWGN(parameters.bits_p_symbol, rng=self.rng, snr_unit=parameters.snr_unit,
-                         efficiency_factor=self.modem.rate)
-
+        self.parameters = parameters
         self.snr_id = None
 
     def run(self):
+
+        # Initialize Modem and AWGN
+        modem = Modem(self.parameters, self.rng)
+        awgn = AWGN(self.parameters.bits_p_symbol, rng=self.rng, snr_unit=self.parameters.snr_unit,
+                    efficiency_factor=modem.rate)
 
         while not self.shutdown_event.is_set():
 
@@ -29,22 +30,22 @@ class PolarWorker(Worker):
                 # Set SNR
                 if snr_id != self.snr_id:
                     self.snr_id = snr_id
-                    self.modem.snr = snr_db
+                    modem.snr = snr_db
 
                 # Transmit a single frame
-                tx_signal = self.modem.tx()
+                tx_signal = modem.tx()
 
                 # Add noise to the transmitted signal
-                noise_symbols = self.awgn(tx_signal, snr=snr_db)
+                noise_symbols = awgn(tx_signal, snr=snr_db)
 
                 # Get the detected user data bits
-                detected_bits = self.modem.rx(noise_symbols, self.awgn.variance)
+                detected_bits = modem.rx(noise_symbols, awgn.variance)
 
                 # Get statistics
-                bit_err_cnt, frame_err_cnt = self.modem.compute_errors(detected_bits)
+                bit_err_cnt, frame_err_cnt = modem.compute_errors(detected_bits)
 
                 # Send statistics
-                self.results_queue.put((('fer', frame_err_cnt, 1), ('ber', bit_err_cnt, self.modem.K)))
+                self.results_queue.put((('fer', frame_err_cnt, 1), ('ber', bit_err_cnt, modem.K)))
 
                 self.job_queue.task_done()
 

@@ -9,8 +9,8 @@ Created on 12/02/2020 11:58
 from tcc.coding.polarcoding import PolarCoding
 
 
-p4 = PolarCoding(2)
-p8 = PolarCoding(3)
+p4 = PolarCoding(2, 1)
+p8 = PolarCoding(3, 1)
 
 print("G_4 = \n")
 print(p4.Fn)

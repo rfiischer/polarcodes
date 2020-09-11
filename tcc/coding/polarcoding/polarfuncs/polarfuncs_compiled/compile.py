@@ -8,4 +8,4 @@ Created on 09/03/2020 14:19
 
 import pythran
 
-pythran.compile_pythranfile("polarfuncs.py", output_file="polarfuncs_compiled%{ext}")
+pythran.compile_pythranfile("../polarfuncs.py", output_file="polarfuncs_compiled%{ext}")

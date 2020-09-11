@@ -12,8 +12,8 @@
     },
     "seed": {
       "param_options": null,
-      "default_value": 12345,
-      "param_text": "Initial seed used for the random number generator"
+      "default_value": -1,
+      "param_text": "Initial seed used for the random number generator. If -1, a random seed is used."
     },
     "results_dir": {
       "param_options": null,
@@ -33,7 +33,10 @@
   },
   "SNR": {
     "snr_range_type": {
-      "param_options": null,
+      "param_options": [
+        "range",
+        "dynamic"
+      ],
       "default_value": "range",
       "param_text": "SNR range type: 'dynamic' or 'range'"
     },
@@ -125,8 +128,10 @@
   },
   "POLAR": {
     "demod_type": {
-      "param_options": ["llr_exact",
-                        "max-log"],
+      "param_options": [
+        "llr_exact",
+        "max-log"
+      ],
       "default_value": "llr_exact",
       "param_text": "Wether to use the max-log approximation or calculate the exact LLR"
     },
@@ -146,17 +151,60 @@
       "param_text": "Number of bits per symbol"
     },
     "construction_method": {
-      "param_options": ["bhattacharyya",
-                        "tahir",
-                        "mdega",
-                        "dega"],
+      "param_options": [
+        "bhattacharyya",
+        "tahir",
+        "mdega",
+        "dega"
+      ],
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
+    },
+    "decoding_algorithm": {
+      "param_options": [
+        "ssc",
+        "fast-ssc",
+        "sscl-spc",
+        "sscl-spc-crc"
+      ],
+      "default_value": "ssc",
+      "param_text": "Polar code decoding algorithm"
+    },
+    "list_size": {
+      "param_options": null,
+      "default_value": 4,
+      "param_text": "List decoding size"
+    },
+    "encoding_mode": {
+      "param_options": [
+        "systematic",
+        "non-systematic"
+      ],
+      "default_value": "systematic",
+      "param_text": "Polar code encoding mode"
+    },
+    "implementation_type": {
+      "param_options": [
+        "python",
+        "pythran"
+      ],
+      "default_value": "pythran",
+      "param_text": "Polar encoding/decoding implementation."
     },
     "base_design_snr": {
       "param_options": null,
       "default_value": 0,
       "param_text": "Base design SNR"
+    },
+    "frozen_design": {
+      "param_options": [true, false],
+      "default_value": false,
+      "param_text": "Wether the change of SNR affects or not the polar code design."
+    },
+    "crc_id": {
+      "param_options": null,
+      "default_value": null,
+      "param_text": "The CRC polynomial used in CRC modes. The CRC length must be multiple of 4."
     }
   },
   "RUN": {

@@ -28,9 +28,9 @@ start_time = time()
 err_sum = np.zeros(2 ** n)
 for i in range(0, 2 ** n):
     print('{}\n'.format(i))
+    rel = np.concatenate(([i], np.delete(np.arange(0, 2 ** n), i)))
+    pc = PolarCoding(n, 1, rel_idx=rel, decoding_algorithm='fast-ssc', encoding_mode='non-systematic')
     for frame in range(0, frames):
-        rel = np.concatenate(([i], np.delete(np.arange(0, 16), i)))
-        pc = PolarCoding(n, 1, rel_idx=rel)
         bits = np.random.randint(0, 2, k, dtype=np.uint8)
         encoded = pc.encode(bits)
         modulated = mod(encoded)

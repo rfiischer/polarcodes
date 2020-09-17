@@ -21,7 +21,6 @@ class Modem:
         # Parameters
         self.K = parameters.k
         self.n = parameters.n
-        self.rate = self.K / 2 ** self.n
         self._snr = parameters.base_design_snr
         self.construction_method = parameters.construction_method
         self.frozen_design = parameters.frozen_design
@@ -31,15 +30,11 @@ class Modem:
         self.mod = Modulator(PolarConstellation(), parameters.bits_p_symbol)
         self.dem = Demodulator(PolarConstellation(), parameters.demod_type, parameters.bits_p_symbol)
 
-        base_design_snr = AWGN.unit_conversion(parameters.base_design_snr, parameters.bits_p_symbol,
-                                               parameters.k / 2 ** parameters.n, parameters.snr_unit,
-                                               'EsN0_dB')
-        rel_idx = construction(parameters.construction_method, parameters.n, base_design_snr)
-
         if parameters.decoding_algorithm == 'sscl-spc-crc':
             if parameters.crc_id:
                 self.crc = CRC(parameters.crc_id)
                 self.tx_size = self.K - self.crc.len_bit
+                self.rate = self.tx_size / 2 ** self.n
 
             else:
                 raise ValueError("A CRC ID must be provided.")
@@ -47,6 +42,12 @@ class Modem:
         else:
             self.crc = None
             self.tx_size = self.K
+            self.rate = self.tx_size / 2 ** self.n
+
+        base_design_snr = AWGN.unit_conversion(parameters.base_design_snr, parameters.bits_p_symbol,
+                                               self.rate, parameters.snr_unit,
+                                               'EsN0_dB')
+        rel_idx = construction(parameters.construction_method, parameters.n, base_design_snr)
 
         self.polar = PolarCoding(parameters.n, self.K, rel_idx,
                                  decoding_algorithm=parameters.decoding_algorithm,

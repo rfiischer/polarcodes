@@ -51,7 +51,7 @@ plot_ber(plot_list_s,
          colours[:len(methods_s)],
          thickness,
          ylim=[1e-7, 1],
-         xlim=[0, 3],
+         xlim=[1, 3],
          xlabel=r'$E_s/N_0$ (dB)',
          font_size=12)
 
@@ -64,7 +64,7 @@ plot_ber(plot_list_n,
          colours[:len(methods_n)],
          thickness,
          ylim=[1e-7, 1],
-         xlim=[0, 3],
+         xlim=[1, 3],
          xlabel=r'$E_s/N_0$ (dB)',
          font_size=12)
 

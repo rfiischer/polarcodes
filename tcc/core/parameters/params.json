@@ -155,7 +155,8 @@
         "bhattacharyya",
         "tahir",
         "mdega",
-        "dega"
+        "dega",
+        "single-bit"
       ],
       "default_value": "bhattacharyya",
       "param_text": "Polar code construction method"
@@ -194,7 +195,7 @@
     "base_design_snr": {
       "param_options": null,
       "default_value": 0,
-      "param_text": "Base design SNR"
+      "param_text": "Base design SNR. For the single-bit method, this number is the bit channel of transmission."
     },
     "frozen_design": {
       "param_options": [true, false],

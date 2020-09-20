@@ -96,6 +96,12 @@ def dega(n, design_snr):
     return sorted_return, start_parameter
 
 
+def single_bit(n, bit_channel):
+    rel = np.concatenate(([bit_channel], np.delete(np.arange(0, 2 ** n), bit_channel)))
+
+    return rel, np.zeros_like(rel)
+
+
 def construction(method, n, design_snr):
     if method == "bhattacharyya":
         rel_idx = bhattacharyya(n, design_snr)[0]
@@ -108,6 +114,9 @@ def construction(method, n, design_snr):
 
     elif method == "dega":
         rel_idx = dega(n, design_snr)[0]
+
+    elif method == "single-bit":
+        rel_idx = single_bit(n, design_snr)[0]
 
     else:
         logger.error("Construction method not implemented {}".format(method))

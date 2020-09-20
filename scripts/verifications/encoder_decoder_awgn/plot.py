@@ -18,12 +18,14 @@ marker_style_0 = dict(color='tab:blue', linestyle='', marker='o',
 marker_style_1 = dict(color='tab:red', linestyle='', marker='*',
                       markersize=10, markerfacecoloralt='tab:red')
 
+data_len = len(data)
+n = int(np.log2(data_len))
 plt.semilogy(data, fillstyle='none', **marker_style_0)
 plt.semilogy(tahir(4, -2)[1], fillstyle='none', **marker_style_1)
 plt.ylim(1e-6, 1)
 plt.ylabel("BER")
 plt.xlabel("Bit Channel")
-plt.xticks(np.arange(0, 16))
+plt.xticks(np.arange(0, data_len))
 plt.grid(True, which="both")
 
 plt.show()

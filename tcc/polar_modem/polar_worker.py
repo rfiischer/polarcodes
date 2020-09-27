@@ -45,7 +45,7 @@ class PolarWorker(Worker):
                 bit_err_cnt, frame_err_cnt = modem.compute_errors(detected_bits)
 
                 # Send statistics
-                self.results_queue.put((('fer', frame_err_cnt, 1), ('ber', bit_err_cnt, modem.K)))
+                self.results_queue.put((('fer', frame_err_cnt, 1), ('ber', bit_err_cnt, modem.tx_size)))
 
                 self.job_queue.task_done()
 

@@ -37,8 +37,8 @@ plot_ber(plot_list,
          colours[:len(methods)],
          thickness,
          ylim=[1e-6, 1],
-         xlim=[1, 3],
-         xlabel=r'$E_s/N_0$ (dB)',
+         xlim=[0, 3],
+         xlabel=r'$E_b/N_0$ (dB)',
          font_size=12)
 
 plt.show()

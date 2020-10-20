@@ -24,6 +24,8 @@ class Modem:
         self._snr = parameters.base_design_snr
         self.construction_method = parameters.construction_method
         self.frozen_design = parameters.frozen_design
+        self.bits_p_symbol = parameters.bits_p_symbol
+        self.snr_unit = parameters.snr_unit
 
         # Objects
         self.rng = rng
@@ -68,7 +70,10 @@ class Modem:
     def snr(self, value):
         self._snr = value
         if not self.frozen_design:
-            rel_idx = construction(self.construction_method, self.n, self._snr)
+            design_snr = AWGN.unit_conversion(self._snr, self.bits_p_symbol,
+                                              self.rate, self.snr_unit,
+                                              'EsN0_dB')
+            rel_idx = construction(self.construction_method, self.n, design_snr)
             self.polar.rel_idx = rel_idx
 
     def tx(self):

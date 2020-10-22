@@ -91,6 +91,7 @@ class PolarSimulation(Simulation):
 
             self.logger.info("Simulating SNR {}".format(snr_db))
 
+            sim_frames = 0
             while not self.snr_manager.snr_stop():
                 for _ in range(self.frame_pack_size):
                     self.job_queue.put((snr_db, snr_id))
@@ -99,6 +100,8 @@ class PolarSimulation(Simulation):
 
                 self.statistics.update_from_queue(self.results_queue)
                 self.statistics.gen_stats()
+                sim_frames += self.frame_pack_size
+                self.logger.debug("Simulated {} frames".format(sim_frames))
 
             # Generate statistics
             self.statistics.gen_rate()

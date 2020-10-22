@@ -48,7 +48,9 @@ class Statistics:
         self.last_snr['val'] = value
         self.last_snr['data'] = dict()
         for cat in self.key_list:
-            self.last_snr['data'][cat] = {'counter': [], 'total': [], 'any': False}
+            self.last_snr['data'][cat] = {'counter': [], 'total': [],
+                                          'sum_counter': 0, 'sum_total': 0,
+                                          'any': False}
 
     def update_stats(self, *args):
         """
@@ -61,6 +63,8 @@ class Statistics:
             current_snr = self.last_snr['data'][event_tuple[0]]
             current_snr['counter'].append(event_tuple[1])
             current_snr['total'].append(event_tuple[2])
+            current_snr['sum_counter'] += event_tuple[1]
+            current_snr['sum_total'] += event_tuple[2]
 
     def gen_stats(self):
         for key in self.key_list:
@@ -113,9 +117,9 @@ class Statistics:
     def gen_rate(self):
         for cat in self.key_list:
             snr_data = self.last_snr['data'][cat]
-            sum_total = np.sum(snr_data['total'])
+            sum_total = snr_data['sum_total']
             if sum_total:
-                snr_data['rate'] = np.sum(snr_data['counter']) / sum_total
+                snr_data['rate'] = snr_data['sum_counter'] / sum_total
 
             else:
                 snr_data['rate'] = -1

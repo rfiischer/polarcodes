@@ -52,7 +52,7 @@ class SnrManager(ABC):
         max_stop = False
         for counter_name in self.config_cls:
             if self.config_cls[counter_name].get('max_counter') is not None:
-                if np.sum(self.statistics.last_snr['data'][counter_name]['total']) >= \
+                if self.statistics.last_snr['data'][counter_name]['sum_total'] >= \
                         self.config_cls[counter_name]['max_counter']:
                     max_stop = True
 
@@ -62,7 +62,7 @@ class SnrManager(ABC):
         min_stop = True
         for counter_name in self.config_cls:
             if self.config_cls[counter_name].get('min_counter') is not None:
-                if np.sum(self.statistics.last_snr['data'][counter_name]['total']) < \
+                if self.statistics.last_snr['data'][counter_name]['sum_total'] < \
                         self.config_cls[counter_name]['min_counter']:
                     min_stop = False
 
@@ -72,7 +72,7 @@ class SnrManager(ABC):
         min_event_stop = True
         for counter_name in self.config_cls:
             if self.config_cls[counter_name].get('min_event_counter') is not None:
-                if np.sum(self.statistics.last_snr['data'][counter_name]['counter']) < \
+                if self.statistics.last_snr['data'][counter_name]['sum_counter'] < \
                         self.config_cls[counter_name]['min_event_counter']:
                     min_event_stop = False
 

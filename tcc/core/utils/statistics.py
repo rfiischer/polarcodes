@@ -71,7 +71,7 @@ class Statistics:
             current_snr = self.last_snr['data'][key]
             current_snr['length'] = len(current_snr['total'])
 
-            if any(current_snr['counter']):
+            if current_snr['sum_counter'] > 0:
                 current_snr['any'] = True
 
     def update_from_queue(self, queue):

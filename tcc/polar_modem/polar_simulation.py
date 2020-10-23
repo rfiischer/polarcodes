@@ -8,6 +8,7 @@ Created on 25/03/2020 21:44
 import multiprocessing as mp
 import logging
 import numpy as np
+from time import time
 
 from tcc.core.simulation import Simulation
 from tcc.polar_modem.polar_worker import PolarWorker
@@ -101,7 +102,7 @@ class PolarSimulation(Simulation):
                 self.statistics.update_from_queue(self.results_queue)
                 self.statistics.gen_stats()
                 sim_frames += self.frame_pack_size
-                self.logger.debug("Simulated {} frames".format(sim_frames))
+                self.logger.debug("Simulated {} frames at SNR {}".format(sim_frames, snr_db))
 
             # Generate statistics
             self.statistics.gen_rate()

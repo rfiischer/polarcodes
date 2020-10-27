@@ -15,7 +15,8 @@ class CRC:
     configurations = {
         "crc-8": [0x107, 0x0, False, 0x0, 1],
         "crc-16": [0x18005, 0x0, False, 0x0, 2],
-        "crc-32": [0x104C11DB7, 0x0, False, 0x0, 4]
+        "crc-32": [0x104C11DB7, 0x0, False, 0x0, 4],
+        "crc-16-lte": [0x11021, 0x0, False, 0x0, 2]
     }
 
     def __init__(self, crc_id):

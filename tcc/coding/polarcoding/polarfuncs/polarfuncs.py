@@ -26,7 +26,7 @@ import numpy as np
 
 # pythran export address_list_factory(uint8)
 # pythran export ssc_node_classifier(uint8, uint32[:], uint32[:])
-# pythran export fast_ssc_node_classifier(uint8, uint32[:], uint32[:])
+# pythran export fast_ssc_node_classifier(uint8, uint32[:], uint32[:], bool)
 # not able to export ssc_scheduler(uint8, uint8[:])
 # not able to export fast_ssc_scheduler(uint8, uint8[:])
 # not able to export sscl_spc_scheduler(uint8, uint8[:])
@@ -125,7 +125,7 @@ def ssc_node_classifier(n, information, frozen):
 
         else:
             # This case should never be reached
-            rate_sheet[i] = 2
+            rate_sheet[i] = 255
 
     for j in range(n):
         for i in range(2 ** (n - j - 1) - 1, 2 ** (n - j) - 1):
@@ -136,12 +136,12 @@ def ssc_node_classifier(n, information, frozen):
                 rate_sheet[i] = 0
 
             else:
-                rate_sheet[i] = 2
+                rate_sheet[i] = 255
 
     return rate_sheet
 
 
-def fast_ssc_node_classifier(n, information, frozen):
+def fast_ssc_node_classifier(n, information, frozen, spc):
     """
     Classify each node.
 
@@ -154,6 +154,7 @@ def fast_ssc_node_classifier(n, information, frozen):
     :param n: tree depth
     :param information: list containing information indexes
     :param frozen: list containing frozen indexes
+    :param spc: whether to include spc nodes or not
     :return: linear array containing the node information
     """
     ilist = [i + 2 ** n - 1 for i in information]
@@ -170,7 +171,7 @@ def fast_ssc_node_classifier(n, information, frozen):
 
         else:
             # This case should never be reached
-            rate_sheet[i] = 4
+            rate_sheet[i] = 255
 
     for j in range(n):
         for i in range(2 ** (n - j - 1) - 1, 2 ** (n - j) - 1):
@@ -186,14 +187,14 @@ def fast_ssc_node_classifier(n, information, frozen):
             elif j == 0 and rate_sheet[2 * i + 1] == 0 and rate_sheet[2 * i + 2] == 1:
                 rate_sheet[i] = 2
 
-            elif j == 1 and rate_sheet[2 * i + 1] == 2 and rate_sheet[2 * i + 2] == 1:
+            elif spc and j == 1 and rate_sheet[2 * i + 1] == 2 and rate_sheet[2 * i + 2] == 1:
                 rate_sheet[i] = 3
 
-            elif j > 1 and rate_sheet[2 * i + 1] == 3 and rate_sheet[2 * i + 2] == 1:
+            elif spc and j > 1 and rate_sheet[2 * i + 1] == 3 and rate_sheet[2 * i + 2] == 1:
                 rate_sheet[i] = 3
 
             else:
-                rate_sheet[i] = 4
+                rate_sheet[i] = 255
 
     return rate_sheet
 
@@ -297,7 +298,7 @@ def fast_ssc_scheduler(n, node_sheet):
     tasks = []
 
     # Start task scheduling
-    if node_sheet[0] != 4:
+    if node_sheet[0] != 255:
         tasks.append([0, node_sheet[0]])
 
     else:
@@ -370,7 +371,7 @@ def sscl_spc_scheduler(n, node_sheet):
     tasks = []
 
     # Start task scheduling
-    if node_sheet[0] != 4:
+    if node_sheet[0] != 255:
         tasks.append([0, node_sheet[0]])
 
     else:

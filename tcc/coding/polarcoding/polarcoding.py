@@ -224,7 +224,7 @@ class PolarCoding(object):
                     self.decoder = self.ssc_dec
 
             elif obj.dec_type == 'fast-ssc':
-                self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
+                self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen, True)
                 self.tasks = fast_ssc_scheduler(self.n, self.node_sheet)
 
                 if self.enc_mode == 'systematic':
@@ -233,13 +233,25 @@ class PolarCoding(object):
                 else:
                     self.decoder = self.fast_ssc_dec
 
-            elif obj.dec_type in ['sscl-spc', 'sscl-spc-crc']:
-                self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen)
+            elif obj.dec_type in ['scl', 'sscl',
+                                  'sscl-spc', 'scl-crc',
+                                  'sscl-crc', 'sscl-spc-crc']:
+
+                self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
+
+                if obj.dec_type in ['scl', 'scl-crc']:
+                    self.node_sheet = ssc_node_classifier(self.n, obj.information, obj.frozen)
+
+                elif obj.dec_type in ['sscl', 'sscl-crc']:
+                    self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen, False)
+
+                else:
+                    self.node_sheet = fast_ssc_node_classifier(self.n, obj.information, obj.frozen, True)
 
                 if obj.list_size is None:
                     raise ValueError("Please provide a list size for sscl-spc/spc-crc modes.")
 
-                if obj.dec_type == 'sscl-spc-crc' and obj.crc is None:
+                if obj.dec_type in ['scl-crc', 'sscl-crc', 'sscl-spc-crc'] and obj.crc is None:
                     raise ValueError("Please provide a CRC on sscl-spc-crc mode.")
 
                 self.crc = obj.crc

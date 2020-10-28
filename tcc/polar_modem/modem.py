@@ -32,7 +32,7 @@ class Modem:
         self.mod = Modulator(PolarConstellation(), parameters.bits_p_symbol)
         self.dem = Demodulator(PolarConstellation(), parameters.demod_type, parameters.bits_p_symbol)
 
-        if parameters.decoding_algorithm == 'sscl-spc-crc':
+        if parameters.decoding_algorithm in ['scl-crc', 'sscl-crc', 'sscl-spc-crc']:
             if parameters.crc_id:
                 self.crc = CRC(parameters.crc_id)
                 self.tx_size = self.K - self.crc.len_bit

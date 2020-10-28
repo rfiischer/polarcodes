@@ -165,6 +165,10 @@
       "param_options": [
         "ssc",
         "fast-ssc",
+        "scl",
+        "scl-crc",
+        "sscl",
+        "sscl-crc",
         "sscl-spc",
         "sscl-spc-crc"
       ],

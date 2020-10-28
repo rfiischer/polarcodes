@@ -30,7 +30,7 @@ rng = np.random.RandomState(seed=124598)
 
 # Simple test
 errors = 'test not performed'
-if decoding_type != 'sscl-spc-crc':
+if decoding_type not in ['scl-crc', 'sscl-crc', 'sscl-spc-crc']:
     errors = 0
     for K in range(1, 9):
         for i in range(0, 2 ** K):
@@ -54,7 +54,7 @@ if decoding_type != 'sscl-spc-crc':
 larger_errors = 0
 reps = 1000
 esn0 = 10
-if decoding_type == 'sscl-spc-crc':
+if decoding_type in ['scl-crc', 'sscl-crc', 'sscl-spc-crc']:
     crc = CRC('crc-{}'.format(crc_len))
     start = int(np.log2(crc.len_bit)) + 2
 
@@ -64,7 +64,7 @@ else:
 
 for n in range(start, 10):
     K = 2 ** (n - 1)
-    if decoding_type == 'sscl-spc-crc':
+    if decoding_type in ['scl-crc', 'sscl-crc', 'sscl-spc-crc']:
         tx_len = K - crc.len_bit
 
     else:

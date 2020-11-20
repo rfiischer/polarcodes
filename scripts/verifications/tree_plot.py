@@ -10,15 +10,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tcc.coding.polarcoding import PolarCoding
-from tcc.coding.polarcoding.construction import tahir
+from tcc.coding.polarcoding.construction import dega
 
+plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["font.size"] = 14
+plt.rcParams["mathtext.fontset"] = "cm"
 
 # Setup
-n = 11
+n = 10
 K = 2 ** (n - 1)
 esn0 = -1
-decoding_type = 'sscl-spc'
-pc = PolarCoding(n, K, tahir(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
+decoding_type = 'fast-ssc'
+pc = PolarCoding(n, K, dega(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
 
 # Gather info
 nodes = pc.decode.node_sheet
@@ -45,7 +48,7 @@ for g in np.unique(nodes):
     ax.scatter(x[ix], y[ix], color=cdict[g], label=ldict[g])
 
 ax.set_yticks([2 ** i for i in range(n, n-5, -1)])
-ax.set_yticklabels(['$s=0$', '$s=1$', '$s=2$', '$s=3$', '$s=4$'])
+ax.set_yticklabels([f'$s={n}$', f'$s={n-1}$', f'$s={n-2}$', f'$s={n-3}$', f'$s={n-4}$'])
 ax.set_xticks([])
 
 ax.legend()

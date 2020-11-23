@@ -37,7 +37,7 @@ plot_ber(plot_list,
          colours[:len(methods)],
          thickness,
          ylim=[1e-7, 1],
-         xlim=[1, 3],
+         xlim=[1, 5],
          xlabel=r'$E_s/N_0$ (dB)',
          font_size=12)
 

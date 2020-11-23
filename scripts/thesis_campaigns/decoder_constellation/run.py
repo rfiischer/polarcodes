@@ -29,15 +29,23 @@ if __name__ == "__main__":
                                             'frame_pack_size': 16}})
 
     main("parameters/batch_0.ini", {'POLAR': {'construction_method': '"dega"',
-                                              'decoding_algorithm': '"fast-ssc"'},
+                                              'decoding_algorithm': '"fast-ssc"',
+                                              'frozen_design': 'false'},
                                     'GENERAL': {'log_file': '"log/{}_log.log"'.format('f_dega'),
                                                 'results_dir': '"results/{}/"'.format('f_dega')},
                                     'RUN': {'num_workers': 16,
-                                            'frame_pack_size': 16}})
+                                            'frame_pack_size': 16},
+                                    'SNR': {'min_snr_db': 1.5,
+                                            'max_snr_db': 5,
+                                            'snr_db_step': 0.25}})
 
     main("parameters/batch_0.ini", {'POLAR': {'construction_method': '"mdega"',
-                                              'decoding_algorithm': '"fast-ssc"'},
+                                              'decoding_algorithm': '"fast-ssc"',
+                                              'frozen_design': 'false'},
                                     'GENERAL': {'log_file': '"log/{}_log.log"'.format('f_mdega'),
                                                 'results_dir': '"results/{}/"'.format('f_mdega')},
                                     'RUN': {'num_workers': 16,
-                                            'frame_pack_size': 16}})
+                                            'frame_pack_size': 16},
+                                    'SNR': {'min_snr_db': 1.5,
+                                            'max_snr_db': 5,
+                                            'snr_db_step': 0.25}})

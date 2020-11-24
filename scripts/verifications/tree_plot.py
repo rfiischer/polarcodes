@@ -14,13 +14,13 @@ from tcc.coding.polarcoding.construction import dega
 
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 14
-plt.rcParams["mathtext.fontset"] = "cm"
+plt.rcParams["mathtext.fontset"] = "stix"
 
 # Setup
 n = 10
 K = 2 ** (n - 1)
-esn0 = -1
-decoding_type = 'fast-ssc'
+esn0 = 0
+decoding_type = 'ssc'
 pc = PolarCoding(n, K, dega(n, esn0)[0], decoding_type, list_size=8, implementation_type='python')
 
 # Gather info

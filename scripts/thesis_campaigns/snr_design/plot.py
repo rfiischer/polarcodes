@@ -9,35 +9,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import glob
+import os
 
 from tcc.core.utils.plotting import plot_ber
 
 
 plot_list = []
-methods = []
+ber_vals = []
+snr_vals = []
 
 for subdir in glob.glob('results/**/'):
     method_name = subdir.split('\\')[-2]
-    methods.append(method_name)
+    snr = float(method_name.split('_')[-1])
 
-    ber = np.loadtxt('results//{}//ber.txt'.format(method_name))[:, 1]
-    ber_range = np.loadtxt('results//{}//ber.txt'.format(method_name))[:, 0]
+    _, ber = np.loadtxt('results//{}//ber.txt'.format(method_name))
 
-    ber = ber[np.where(ber > 0)[0]]
-    ber_range = ber_range[np.where(ber > 0)[0]]
+    ber_vals.append(ber)
+    snr_vals.append(snr)
 
-    plot_list.append([ber_range, ber])
+ber_data = np.zeros((len(ber_vals), 2))
+ber_data[:, 0] = snr_vals
+ber_data[:, 1] = ber_vals
+
+if not os.path.exists('results//condensed'):
+    os.makedirs('results//condensed')
+
+np.savetxt('results//condensed//ber.txt', ber_data)
 
 # QPSK plot - EbN0
-thickness = [2] * len(methods)
-colours = []
-plot_ber(plot_list,
-         tuple(methods),
-         "Polar",
-         colours[:len(methods)],
+thickness = [2]
+colours = ['r']
+plot_ber([[snr_vals, ber_vals]],
+         ('SNR',),
+         "SNR",
+         colours[:0],
          thickness,
-         ylim=[1e-6, 1],
-         xlim=[1, 3],
+         ylim=[1e-7, 1],
+         xlim=[1, 5],
          xlabel=r'$E_s/N_0$ (dB)',
          font_size=12)
 

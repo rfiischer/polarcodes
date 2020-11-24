@@ -9,7 +9,7 @@ Created on 10/03/2020 20:58
 from tcc.main import main
 
 if __name__ == "__main__":
-    snr_list = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]
+    snr_list = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
     for snr in snr_list:
         main("parameters/batch_0.ini", {'POLAR': {'base_design_snr': snr},
                                         'GENERAL': {'log_file': '"log/{}_log.log"'.format('snr_' + str(snr)),

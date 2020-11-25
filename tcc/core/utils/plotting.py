@@ -6,6 +6,8 @@ Created on 23/07/2020 11:46
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.special import erfc
 
 
 def plot_ber(graphs, legends, title, styl_arr, width, xlabel=r'$E_b/N_0$ (dB)', ylabel='BER', ylim=None, xlim=None,
@@ -40,3 +42,7 @@ def plot_ber(graphs, legends, title, styl_arr, width, xlabel=r'$E_b/N_0$ (dB)', 
     plt.rcParams.update({'font.size': font_size})
 
     fig.tight_layout()
+
+
+def bpsk_ber(x):
+    return 1/2*erfc(np.sqrt(x))

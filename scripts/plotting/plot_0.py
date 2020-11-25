@@ -33,12 +33,14 @@ colors = ['red', 'deepskyblue', 'orange', 'blue', 'magenta', 'green', 'darkviole
 
 # Plot configuration
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams["font.size"] = 14
+plt.rcParams["font.size"] = 15
 plt.rcParams["mathtext.fontset"] = "stix"
-plt.rcParams["xtick.labelsize"] = 13
-plt.rcParams["ytick.labelsize"] = 13
-plt.rcParams["axes.labelsize"] = 14
-plt.rcParams['figure.figsize'] = (6.4, 5.8)
+plt.rcParams["xtick.labelsize"] = 14
+plt.rcParams["ytick.labelsize"] = 14
+plt.rcParams["axes.labelsize"] = 15
+plt.rcParams["legend.fontsize"] = 14
+plt.rcParams['figure.figsize'] = (8.8, 4)
+# plt.rcParams['figure.figsize'] = (6.6, 4.5)
 
 plot_type = 'ber_fer'
 width = 1
@@ -47,11 +49,10 @@ marker_size = 8
 gridline = (0, (5, 10))
 rotate_ylabel = True
 
-xlabel = r"$E_b/N_0$ [dB]"
+xlabel = r"Design $E_b/N_0$ [dB]"
 
 # dict prototype: {'label': ,'dir': }
-plot_list = [{'label': 'DEGA', 'dir': 'm_dega'},
-             {'label': 'M-DEGA', 'dir': 'm_mdega'}]
+plot_list = [{'label': 'Channel $E_b/N_0=2$ dB', 'dir': 'condensed', 'group': 0}]
 
 # Plot creation
 if plot_type == 'ber_fer':
@@ -60,13 +61,14 @@ if plot_type == 'ber_fer':
 else:
     fig, ax = plt.subplots(1, 1)
 
-for i, plot_dict in enumerate(plot_list):
+for plot_dict in plot_list:
     if plot_type in ['ber', 'fer']:
         data = np.loadtxt(f'resources//{plot_dict["dir"]}//{plot_type}.txt')
 
         error_rate = data[:, 1]
         plot_range = data[:, 0]
 
+        i = plot_dict['group']
         ax.semilogy(plot_range, error_rate, linewidth=width, marker=markers[i], color=colors[i], fillstyle=fill,
                     markersize=marker_size, label=plot_dict['label'])
 
@@ -93,6 +95,7 @@ for i, plot_dict in enumerate(plot_list):
         fer = fer_data[:, 1]
         fer_range = fer_data[:, 0]
 
+        i = plot_dict['group']
         ax1.semilogy(fer_range, fer, linewidth=width, marker=markers[i], color=colors[i], fillstyle=fill,
                      markersize=marker_size, label=plot_dict['label'])
         ax2.semilogy(ber_range, ber, linewidth=width, marker=markers[i], color=colors[i], fillstyle=fill,
@@ -129,13 +132,12 @@ if plot_type in ['ber', 'fer']:
 else:
     handles, labels = ax1.get_legend_handles_labels()
 
-if not labels:
-    fig.legend(handles, labels, loc='upper center', fancybox=False, edgecolor='k', bbox_to_anchor=(0.5, 0.13))
-    fig.subplots_adjust(wspace=0.4, bottom=0.23)
+if labels:
+    fig.legend(handles, labels, loc='upper center', fancybox=False, edgecolor='k', bbox_to_anchor=(0.5, 0.12),
+               ncol=4)
+    fig.subplots_adjust(left=0.06, bottom=0.23, right=0.99, top=0.93, wspace=0.15)
 
 else:
-    fig.set_figwidth(5.4)
-    fig.set_figheight(4.8)
     fig.tight_layout()
 
 plt.show()

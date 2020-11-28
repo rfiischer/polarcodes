@@ -85,5 +85,7 @@ handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles, labels, loc='upper center', fancybox=False, edgecolor='k', bbox_to_anchor=(0.5, 0.11),
            ncol=4)
 fig.subplots_adjust(left=0.15, bottom=0.22, right=0.98, top=0.99)
+ax.grid(True)
+ax.set_ylim([0.9725, 1.0025])
 
 plt.show()

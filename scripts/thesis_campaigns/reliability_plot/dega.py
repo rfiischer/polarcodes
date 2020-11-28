@@ -38,12 +38,11 @@ rel_frozen = rel[frozen]
 info = idx[:2 ** (n - 1)]
 rel_info = rel[info]
 
-ax1.scatter(frozen, rel_frozen, color='deepskyblue', s=2)
-ax1.scatter(info, rel_info, color='red', s=2)
+ax1.scatter(frozen, rel_frozen, color='deepskyblue', s=9, label='Frozen')
+ax2.scatter(frozen, [0] * len(frozen), color='deepskyblue', s=40, marker=3, label='Frozen')
+ax1.scatter(info, rel_info, color='red', s=9, facecolors='none', linewidth=0.5, label='Information')
+ax2.scatter(info, [0] * len(info), color='red', s=40, marker=2, label='Information')
 ax1.set_yscale('log')
-
-ax2.scatter(frozen, [0] * len(frozen), color='deepskyblue', s=2, label='Frozen')
-ax2.scatter(info, [0] * len(info), color='red', s=2, label='Information')
 
 ax1.set_xticks([])
 ax1.set_ylabel("DEGA Likelihood Mean")
@@ -51,6 +50,7 @@ ax1.set_ylim([1e-2, 1e5])
 
 ax2.set_xlabel("Bit Index")
 ax2.set_yticks([])
+ax2.set_ylim([-0.1, 0.1])
 
 fig.subplots_adjust(left=0.09, bottom=0.14, right=0.99, top=0.95, hspace=0.3)
 fig.legend(loc='upper center', fancybox=False, edgecolor='k', bbox_to_anchor=(0.52, 0.376),

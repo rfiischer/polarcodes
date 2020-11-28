@@ -7,7 +7,6 @@ Created on 25/11/2020 17:04
 """
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 
 from tcc.coding.polarcoding.construction import bhattacharyya, dega, mdega, tahir
@@ -63,22 +62,22 @@ dega_eq = np.where(err_dega == 0)[0]
 dega_dif0 = np.where(np.logical_and(err_dega == 1, bhat_sheet == 1))[0]
 dega_dif1 = np.where(np.logical_and(err_dega == 1, bhat_sheet == 0))[0]
 ax1.scatter(dega_eq, [0] * len(dega_eq), color='deepskyblue', s=5)
-ax1.scatter(dega_dif0, [0] * len(dega_dif0), color='red', s=8)
-ax1.scatter(dega_dif1, [0] * len(dega_dif1), color='orange', s=8)
+ax1.scatter(dega_dif0, [0] * len(dega_dif0), color='red', s=100, marker=2)
+ax1.scatter(dega_dif1, [0] * len(dega_dif1), color='orange', s=100, marker=3)
 
 mdega_eq = np.where(err_mdega == 0)[0]
 mdega_dif0 = np.where(np.logical_and(err_mdega == 1, bhat_sheet == 1))[0]
 mdega_dif1 = np.where(np.logical_and(err_mdega == 1, bhat_sheet == 0))[0]
 ax2.scatter(mdega_eq, [0] * len(mdega_eq), color='deepskyblue', s=5)
-ax2.scatter(mdega_dif0, [0] * len(mdega_dif0), color='red', s=8)
-ax2.scatter(mdega_dif1, [0] * len(mdega_dif1), color='orange', s=8)
+ax2.scatter(mdega_dif0, [0] * len(mdega_dif0), color='red', s=100, marker=2)
+ax2.scatter(mdega_dif1, [0] * len(mdega_dif1), color='orange', s=100, marker=3)
 
 tahir_eq = np.where(err_tahir == 0)[0]
 tahir_dif0 = np.where(np.logical_and(err_tahir == 1, bhat_sheet == 1))[0]
 tahir_dif1 = np.where(np.logical_and(err_tahir == 1, bhat_sheet == 0))[0]
 ax3.scatter(tahir_eq, [0] * len(tahir_eq), color='deepskyblue', s=5, label="Equal to Bhattacharyya")
-ax3.scatter(tahir_dif0, [0] * len(tahir_dif0), color='red', s=8, label="Information in Bhattacharyya")
-ax3.scatter(tahir_dif1, [0] * len(tahir_dif1), color='orange', s=8, label="Frozen in Bhattacharyya")
+ax3.scatter(tahir_dif0, [0] * len(tahir_dif0), color='red', s=100, label="Information in Bhattacharyya", marker=2)
+ax3.scatter(tahir_dif1, [0] * len(tahir_dif1), color='orange', s=100, label="Frozen in Bhattacharyya", marker=3)
 
 ax1.set_yticks([])
 ax2.set_yticks([])

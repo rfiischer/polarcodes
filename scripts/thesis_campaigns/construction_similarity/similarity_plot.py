@@ -77,8 +77,8 @@ tahir_eq = np.where(err_tahir == 0)[0]
 tahir_dif0 = np.where(np.logical_and(err_tahir == 1, bhat_sheet == 1))[0]
 tahir_dif1 = np.where(np.logical_and(err_tahir == 1, bhat_sheet == 0))[0]
 ax3.scatter(tahir_eq, [0] * len(tahir_eq), color='deepskyblue', s=5, label="Equal to Bhattacharyya")
-ax3.scatter(tahir_dif0, [0] * len(tahir_dif0), color='red', s=8, label="Rate-1 in Bhattacharyya")
-ax3.scatter(tahir_dif1, [0] * len(tahir_dif1), color='orange', s=8, label="Rate-0 in Bhattacharyya")
+ax3.scatter(tahir_dif0, [0] * len(tahir_dif0), color='red', s=8, label="Information in Bhattacharyya")
+ax3.scatter(tahir_dif1, [0] * len(tahir_dif1), color='orange', s=8, label="Frozen in Bhattacharyya")
 
 ax1.set_yticks([])
 ax2.set_yticks([])

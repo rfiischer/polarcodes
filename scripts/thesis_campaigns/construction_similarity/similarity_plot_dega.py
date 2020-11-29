@@ -13,12 +13,13 @@ from tcc.coding.polarcoding.construction import bhattacharyya, dega, mdega, tahi
 from tcc.core.utils.awgn import AWGN
 
 n = 10
-k = 2 ** (n - 1) - 16
+k_info = 2 ** (n - 1) - 16
+k_tot = 2 ** (n - 1)
 snreb = 2
 
 rng = np.random.RandomState()
 awgn = AWGN(1, rng)
-snr = awgn.unit_conversion(snreb, 1, k / 2 ** n, "EbN0_dB", "EsN0_dB")
+snr = awgn.unit_conversion(snreb, 1, k_info / 2 ** n, "EbN0_dB", "EsN0_dB")
 
 bhat_rel = bhattacharyya(n, snr)[0]
 dega_rel = dega(n, snr)[0]
@@ -30,10 +31,10 @@ dega_sheet = np.zeros(2 ** n)
 mdega_sheet = np.zeros(2 ** n)
 tahir_sheet = np.zeros(2 ** n)
 
-bhat_i = bhat_rel[:k]
-dega_i = dega_rel[:k]
-mdega_i = mdega_rel[:k]
-tahir_i = tahir_rel[:k]
+bhat_i = bhat_rel[:k_tot]
+dega_i = dega_rel[:k_tot]
+mdega_i = mdega_rel[:k_tot]
+tahir_i = tahir_rel[:k_tot]
 
 bhat_sheet[bhat_i] = 1
 dega_sheet[dega_i] = 1

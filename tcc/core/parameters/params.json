@@ -210,6 +210,11 @@
       "param_options": null,
       "default_value": null,
       "param_text": "The CRC polynomial used in CRC modes. The CRC length must be multiple of 4."
+    },
+    "interleaver_columns": {
+      "param_options": null,
+      "default_value": 0,
+      "param_text": "The interleaver number of columns."
     }
   },
   "RUN": {

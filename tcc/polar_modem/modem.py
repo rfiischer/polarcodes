@@ -14,6 +14,7 @@ from tcc.coding.polarcoding.polarcoding import PolarCoding
 from tcc.coding.polarcoding.construction import construction
 from tcc.coding.crc import CRC
 from tcc.core.utils.awgn import AWGN
+from tcc.coding.interleaving import Interleaver
 
 
 class Modem:
@@ -58,6 +59,14 @@ class Modem:
                                  implementation_type=parameters.implementation_type,
                                  crc=self.crc)
 
+        if parameters.interleaver_columns != 0:
+            self.interleaver = Interleaver(columns=parameters.interleaver_columns)
+            self.inter = True
+
+        else:
+            self.interleaver = None
+            self.inter = False
+
         # Initialization
         self.txbits = None
         self.rxbits = None
@@ -79,11 +88,15 @@ class Modem:
     def tx(self):
         self.txbits = self.rng.integers(0, 2, self.tx_size, dtype=np.uint8)
         coded = self.polar.encode(self.txbits)
+        if self.inter:
+            coded = self.interleaver.interleave(coded)
         modulated = self.mod(coded)
         return modulated
 
     def rx(self, signal, variance):
         demodulated = self.dem(signal, variance)
+        if self.inter:
+            demodulated = self.interleaver.deinterleave(demodulated)
         rxbits = self.polar.decode(demodulated)
         return rxbits
 

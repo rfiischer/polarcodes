@@ -22,22 +22,23 @@ plt.rcParams['figure.figsize'] = (6.6, 4.5)
 
 data = np.loadtxt('results.txt')
 
-marker_style_0 = dict(linestyle='', marker='o',
-                      markersize=10, markeredgecolor='red')
+marker_style_0 = dict(linestyle='', marker='s',
+                      markersize=10, markeredgecolor='red', markeredgewidth=2)
 
-marker_style_1 = dict(linestyle='', marker='*',
-                      markersize=10, markeredgecolor='blue')
+marker_style_1 = dict(linestyle='', marker='^',
+                      markersize=10, markeredgecolor='deepskyblue', markeredgewidth=2)
 
 data_len = len(data)
 n = int(np.log2(data_len))
 
 fig, ax = plt.subplots()
-ax.semilogy(data, fillstyle='none', **marker_style_0)
-ax.semilogy(tahir(4, -2)[1], fillstyle='none', **marker_style_1)
+ax.semilogy(data, fillstyle='none', **marker_style_0, label='Simulated')
+ax.semilogy(tahir(4, -2)[1], fillstyle='none', **marker_style_1, label='Bit Error Evolution')
 ax.set_ylim([1e-6, 1])
 ax.set_ylabel("BER")
 ax.set_xlabel("Bit Channel")
 ax.set_xticks(np.arange(0, data_len))
 ax.grid(True, which="both")
+ax.legend(ncol=2, fancybox=False, edgecolor='k')
 
 plt.show()
